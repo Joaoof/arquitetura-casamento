@@ -1,5 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 
@@ -8,27 +7,20 @@ export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createAttendanceDto: CreateAttendanceDto) {
-    try {
-      return await this.prisma.attendance.create({
-        data: {
-          fullName: createAttendanceDto.fullName.trim(),
-          email: createAttendanceDto.email.trim().toLowerCase(),
-          phone: createAttendanceDto.phone?.trim(),
-          isAttending: createAttendanceDto.isAttending,
-          companions: createAttendanceDto.companions ?? 0,
-          message: createAttendanceDto.message?.trim(),
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException('Este e-mail já confirmou presença.');
-      }
+    const email = createAttendanceDto.email.trim().toLowerCase();
+    const data = {
+      fullName: createAttendanceDto.fullName.trim(),
+      phone: createAttendanceDto.phone?.trim(),
+      isAttending: createAttendanceDto.isAttending,
+      companions: createAttendanceDto.companions ?? 0,
+      message: createAttendanceDto.message?.trim(),
+    };
 
-      throw error;
-    }
+    return await this.prisma.attendance.upsert({
+      where: { email },
+      update: data,
+      create: { email, ...data },
+    });
   }
 
   async findAllForAdmin(params: {
