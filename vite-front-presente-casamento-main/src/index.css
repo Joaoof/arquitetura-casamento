@@ -1,0 +1,131 @@
+/* src/index.css */
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-lato {
+  color: #404951;
+  text-align: center;
+  font-family: "Lato", sans-serif;
+  font-style: normal;
+  line-height: normal;
+  font-weight: 400;
+}
+
+.font-roboto-mono {
+  font-family: "Roboto Mono", monospace;
+  font-weight: 500;
+}
+
+.monetary-value {
+  font-size: 1rem; /* Ajuste o tamanho */
+  font-weight: bold;
+  color: #166ea1; /* Cor elegante */
+}
+
+.button-edit {
+  color: #080200;
+  background-color: #b6c5d5;
+}
+
+.button-gift {
+  background: #a47764 !important;
+  transition: all 0.3s;
+}
+
+.section-gift {
+  box-shadow: 0px 10px 8px 0px rgba(93, 117, 141, 0.05);
+  border-radius: 8px;
+  border: 1px solid #d9e2eb;
+  background: #fff;
+  margin: 0 auto 20px;
+  min-width: auto;
+}
+
+.font-noto {
+  font-family: "Noto Serif", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: 100;
+  font-variation-settings: "wdth" 100;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Estilos para a tabela */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+/* Cores para status */
+.bg-green-100 {
+  background-color: #dcfce7 !important;
+}
+
+.text-green-800 {
+  color: #2e7d32 !important;
+}
+
+.bg-yellow-100 {
+  background-color: #fff9c4 !important;
+}
+
+.text-yellow-800 {
+  color: #f57f17 !important;
+}
+
+/* Em seu arquivo global.css ou App.css */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+}
