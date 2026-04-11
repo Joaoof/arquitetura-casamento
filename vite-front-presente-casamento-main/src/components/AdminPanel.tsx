@@ -10,6 +10,7 @@ import {
   ChevronUp, Percent,
 } from 'lucide-react';
 import { exportToPdf } from '../helpers/export.helper';
+import { api, Attendance } from '../services/api';
 
 interface AdminSidebarProps {
   gifts: GiftType[];
@@ -20,7 +21,7 @@ interface AdminSidebarProps {
   onCancelEdit: () => void;
 }
 
-type Tab = 'dashboard' | 'manage' | 'form' | 'analytics'
+type Tab = 'dashboard' | 'manage' | 'form' | 'analytics' | 'attendance'
 
 // ── Mini sparkline SVG ──────────────────────────────────────
 const Sparkline: React.FC<{ values: number[]; color: string; height?: number }> = ({
@@ -91,12 +92,47 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved'>('all')
   const [sortBy, setSortBy] = useState<'name' | 'price'>('name')
   const [now, setNow] = useState(new Date())
+  const [attendances, setAttendances] = useState<Attendance[]>([])
+  const [attendanceSearch, setAttendanceSearch] = useState('')
+  const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'confirmed' | 'declined'>('all')
+  const [attendanceLoading, setAttendanceLoading] = useState(false)
+  const [attendanceError, setAttendanceError] = useState('')
+  const [attendanceStats, setAttendanceStats] = useState({
+    total: 0,
+    confirmed: 0,
+    declined: 0,
+    totalExpectedGuests: 0,
+  })
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     tickRef.current = setInterval(() => setNow(new Date()), 1000)
     return () => { if (tickRef.current) clearInterval(tickRef.current) }
   }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const loadAttendanceData = async () => {
+      setAttendanceLoading(true)
+      setAttendanceError('')
+      try {
+        const [attendanceResponse, statsResponse] = await Promise.all([
+          api.getAttendanceAdmin({ page: 1, limit: 100 }),
+          api.getAttendanceStats(),
+        ])
+        setAttendances(attendanceResponse.data ?? [])
+        setAttendanceStats(statsResponse)
+      } catch (error) {
+        console.error('Erro ao carregar confirmações de presença:', error)
+        setAttendanceError('Não foi possível carregar os RSVPs agora.')
+      } finally {
+        setAttendanceLoading(false)
+      }
+    }
+
+    loadAttendanceData()
+  }, [isOpen])
 
   const stats = {
     total: gifts.length,
@@ -156,9 +192,22 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const NAV = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: <BarChart3 size={15} />, badge: null },
     { id: 'analytics' as Tab, label: 'Analytics', icon: <Activity size={15} />, badge: null },
+    { id: 'attendance' as Tab, label: 'RSVP', icon: <Users size={15} />, badge: attendanceStats.total > 0 ? String(attendanceStats.total) : null },
     { id: 'manage' as Tab, label: 'Gerenciar', icon: <List size={15} />, badge: stats.total > 0 ? String(stats.total) : null },
     { id: 'form' as Tab, label: 'Novo Item', icon: <PlusCircle size={15} />, badge: null },
   ]
+
+  const filteredAttendances = attendances
+    .filter((attendance) => {
+      const term = attendanceSearch.trim().toLowerCase()
+      if (!term) return true
+      return attendance.fullName.toLowerCase().includes(term) || attendance.email.toLowerCase().includes(term)
+    })
+    .filter((attendance) => {
+      if (attendanceFilter === 'confirmed') return attendance.isAttending
+      if (attendanceFilter === 'declined') return !attendance.isAttending
+      return true
+    })
 
   return (
     <>
@@ -302,6 +351,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <h2 className="text-sm font-black text-white">
                   {activeTab === 'dashboard' && '👋 Bem-vindo ao Dashboard'}
                   {activeTab === 'analytics' && '📊 Analytics Detalhado'}
+                  {activeTab === 'attendance' && '📝 Confirmações de Presença (RSVP)'}
                   {activeTab === 'manage' && '🎁 Gerenciar Presentes'}
                   {activeTab === 'form' && (giftToEdit ? '✏️ Editar Presente' : '➕ Novo Presente')}
                 </h2>
@@ -564,6 +614,98 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ══ ATTENDANCE ══ */}
+              {activeTab === 'attendance' && (
+                <div className="space-y-4 adm-fadeup">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      { label: 'Total respostas', value: attendanceStats.total, color: '#4A7AB5' },
+                      { label: 'Confirmados', value: attendanceStats.confirmed, color: '#4ade80' },
+                      { label: 'Recusados', value: attendanceStats.declined, color: '#fb923c' },
+                      { label: 'Público esperado', value: attendanceStats.totalExpectedGuests, color: '#C8DCF0' },
+                    ].map(card => (
+                      <div key={card.label} className="rounded-2xl p-4"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                        <p className="text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>{card.label}</p>
+                        <p className="text-2xl font-black" style={{ color: card.color }}>{card.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-1 items-center gap-2 rounded-xl px-3 py-2.5 min-w-0"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,220,240,0.1)' }}>
+                      <Search size={13} style={{ color: 'rgba(200,220,240,0.4)', flexShrink: 0 }} />
+                      <input value={attendanceSearch} onChange={e => setAttendanceSearch(e.target.value)}
+                        placeholder="Buscar por nome ou e-mail..."
+                        className="flex-1 bg-transparent text-xs outline-none min-w-0"
+                        style={{ color: 'rgba(200,220,240,0.85)', caretColor: '#4A7AB5' }} />
+                    </div>
+                    <select value={attendanceFilter} onChange={e => setAttendanceFilter(e.target.value as any)}
+                      className="rounded-xl px-3 py-2.5 text-xs outline-none appearance-none cursor-pointer"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,220,240,0.1)', color: 'rgba(200,220,240,0.7)' }}>
+                      <option value="all">Todos</option>
+                      <option value="confirmed">Confirmados</option>
+                      <option value="declined">Recusados</option>
+                    </select>
+                  </div>
+
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                    <div className="grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
+                      style={{ gridTemplateColumns: '1.2fr 1fr 90px 90px 120px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
+                      <span>Nome</span><span>E-mail</span><span className="text-center">Acomp.</span>
+                      <span className="text-center">Status</span><span className="text-right">Data</span>
+                    </div>
+                    <div className="max-h-[420px] overflow-y-auto">
+                      {attendanceLoading && (
+                        <div className="py-12 text-center text-xs" style={{ color: 'rgba(200,220,240,0.5)' }}>
+                          Carregando confirmações...
+                        </div>
+                      )}
+
+                      {!attendanceLoading && attendanceError && (
+                        <div className="py-12 text-center text-xs" style={{ color: '#fca5a5' }}>
+                          {attendanceError}
+                        </div>
+                      )}
+
+                      {!attendanceLoading && !attendanceError && filteredAttendances.length === 0 && (
+                        <div className="py-12 text-center text-xs" style={{ color: 'rgba(200,220,240,0.5)' }}>
+                          Nenhuma confirmação encontrada.
+                        </div>
+                      )}
+
+                      {!attendanceLoading && !attendanceError && filteredAttendances.map((attendance, index) => (
+                        <div key={attendance.id}
+                          className="adm-row grid px-5 py-3 items-center transition-colors"
+                          style={{ gridTemplateColumns: '1.2fr 1fr 90px 90px 120px', background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold" style={{ color: 'rgba(200,220,240,0.9)' }}>{attendance.fullName}</p>
+                            {attendance.message && (
+                              <p className="truncate text-[9px]" style={{ color: 'rgba(200,220,240,0.35)' }}>{attendance.message}</p>
+                            )}
+                          </div>
+                          <p className="truncate text-xs" style={{ color: 'rgba(200,220,240,0.7)' }}>{attendance.email}</p>
+                          <p className="text-center text-xs font-bold" style={{ color: '#C8DCF0' }}>{attendance.companions}</p>
+                          <div className="flex justify-center">
+                            <span className="rounded-full px-2 py-0.5 text-[8px] font-bold"
+                              style={attendance.isAttending
+                                ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
+                                : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
+                              {attendance.isAttending ? '● Confirmado' : '● Recusado'}
+                            </span>
+                          </div>
+                          <p className="text-right text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>
+                            {new Date(attendance.createdAt).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

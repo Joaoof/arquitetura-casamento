@@ -11,6 +11,16 @@ type CreateAttendancePayload = {
   message?: string;
 };
 
+export type Attendance = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  isAttending: boolean;
+  companions: number;
+  message?: string | null;
+  createdAt: string;
+};
 const withCoupleSlug = (path: string, coupleSlug?: string) => {
   if (!coupleSlug) return `${API_URL}${path}`;
 
@@ -42,6 +52,44 @@ export const api = {
     });
 
     if (!response.ok) throw new Error('Falha ao buscar presentes');
+    return response.json();
+  },
+
+  async getAttendanceAdmin(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    isAttending?: 'true' | 'false';
+  }): Promise<{ data: Attendance[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.search) query.set('search', params.search);
+    if (params?.isAttending) query.set('isAttending', params.isAttending);
+
+    const response = await fetch(`${API_URL}/attendance/admin${query.toString() ? `?${query.toString()}` : ''}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Falha ao buscar confirmações de presença');
+    return response.json();
+  },
+
+  async getAttendanceStats(): Promise<{
+    total: number;
+    confirmed: number;
+    declined: number;
+    totalExpectedGuests: number;
+  }> {
+    const response = await fetch(`${API_URL}/attendance/admin/stats`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Falha ao buscar estatísticas de presença');
     return response.json();
   },
 
