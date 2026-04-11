@@ -21,7 +21,6 @@ export type Attendance = {
   message?: string | null;
   createdAt: string;
 };
-
 const withCoupleSlug = (path: string, coupleSlug?: string) => {
   if (!coupleSlug) return `${API_URL}${path}`;
 
