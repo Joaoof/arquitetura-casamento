@@ -2,6 +2,15 @@ import { Gift } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+type CreateAttendancePayload = {
+  fullName: string;
+  email: string;
+  phone?: string;
+  isAttending: boolean;
+  companions?: number;
+  message?: string;
+};
+
 const withCoupleSlug = (path: string, coupleSlug?: string) => {
   if (!coupleSlug) return `${API_URL}${path}`;
 
@@ -10,6 +19,23 @@ const withCoupleSlug = (path: string, coupleSlug?: string) => {
 };
 
 export const api = {
+  async createAttendance(payload: CreateAttendancePayload) {
+    const response = await fetch(`${API_URL}/attendance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Falha ao enviar confirmação de presença');
+    }
+
+    return response.json();
+  },
+
   async getGifts(coupleSlug?: string): Promise<Gift[]> {
     const response = await fetch(withCoupleSlug('/gifts', coupleSlug), {
       method: 'GET',
