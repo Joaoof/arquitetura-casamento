@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { Heart, Send, ChevronDown, ChevronRight, Home, Sparkles, Loader2, ArrowLeft } from "lucide-react"
 import { getCoupleConfig, normalizeCoupleSlug } from "../config/couples"
+import { api } from "../services/api"
 
 type FormData = {
   fullName: string
@@ -202,10 +203,17 @@ export default function RSVP() {
     e.preventDefault()
     setStatus("loading")
     try {
-      await fetch(`/api/rsvp?couple=${encodeURIComponent(normalizedCoupleSlug)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const companions = Number(form.guests.split(" ")[0] || "1") - 1
+      const combinedMessage = [form.dietary?.trim() ? `Restrições alimentares: ${form.dietary.trim()}` : null, form.message?.trim() || null]
+        .filter(Boolean)
+        .join("\n\n")
+
+      await api.createAttendance({
+        fullName: form.fullName,
+        email: form.email,
+        isAttending: form.attendance === "yes",
+        companions: Math.max(0, companions),
+        message: combinedMessage || undefined,
       })
       sessionStorage.removeItem('rsvp_draft') // limpa rascunho após envio
       setStatus("success")
