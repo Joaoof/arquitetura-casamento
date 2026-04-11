@@ -15,6 +15,8 @@ type FormData = {
 
 type Status = "idle" | "loading" | "success" | "error"
 
+type SubmitError = { message: string } | null
+
 const GUEST_OPTIONS = ["1 Convidado", "2 Convidados", "3 Convidados", "4 Convidados"]
 
 const ATTENDANCE_OPTIONS = [
@@ -173,6 +175,7 @@ export default function RSVP() {
     } catch { return EMPTY_FORM }
   })
   const [status, setStatus] = useState<Status>("idle")
+  const [submitError, setSubmitError] = useState<SubmitError>(null)
 
   const { coupleSlug } = useParams<{ coupleSlug: string }>()
   const normalizedCoupleSlug = normalizeCoupleSlug(coupleSlug)
@@ -202,6 +205,7 @@ export default function RSVP() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus("loading")
+    setSubmitError(null)
     try {
       const companions = Number(form.guests.split(" ")[0] || "1") - 1
       const combinedMessage = [form.dietary?.trim() ? `Restrições alimentares: ${form.dietary.trim()}` : null, form.message?.trim() || null]
@@ -217,7 +221,9 @@ export default function RSVP() {
       })
       sessionStorage.removeItem('rsvp_draft') // limpa rascunho após envio
       setStatus("success")
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Algo deu errado. Por favor, tente novamente.'
+      setSubmitError({ message })
       setStatus("error")
     }
   }
@@ -410,7 +416,7 @@ export default function RSVP() {
               {status === "error" && (
                 <div className="rounded-xl p-4 text-sm"
                   style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', color: '#dc2626' }}>
-                  Algo deu errado. Por favor, tente novamente.
+                  {submitError?.message ?? 'Algo deu errado. Por favor, tente novamente.'}
                 </div>
               )}
 
