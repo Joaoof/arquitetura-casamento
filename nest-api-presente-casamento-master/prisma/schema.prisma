@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gift {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float    @default(0)
+  imageUrl    String?
+  priority    String   @default("Média")
+  status      String   @default("available")
+  reservedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  adminId     String
+  admin       Admin    @relation(fields: [adminId], references: [id])
+
+  @@map("gifts")
+
+  // ✅ Índices com ordenação correta
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([name(sort: Asc)])
+  @@index([status, createdAt(sort: Desc)])
+
+  // ✅ Nome personalizado (map) e tipo (type)
+  @@index([name], map: "idx_gifts_name_asc", type: BTree)
+
+  // Para busca full-text, ainda precisa de SQL (ver abaixo)
+}
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  salt     String
+
+  @@map("admins")
+  Gift Gift[]
+}
