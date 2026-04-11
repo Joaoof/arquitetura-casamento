@@ -10,6 +10,7 @@ import {
     UseGuards,
     HttpStatus,
     Query,
+    BadRequestException,
 } from '@nestjs/common';
 import { GiftsService } from './gifts.service';
 import { CreateGiftDto } from './dto/create-gift.dto';
@@ -196,6 +197,17 @@ export class GiftsController {
             imageUrl: removedGift.imageUrl === null ? undefined : removedGift.imageUrl,
             reservedBy: removedGift.reservedBy === null ? undefined : removedGift.reservedBy,
         };
+    }
+
+    @Post('scrape')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Busca informações de produto a partir de uma URL' })
+    @ApiBody({ schema: { example: { url: 'https://www.mercadolivre.com.br/produto/...' } } })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Dados do produto extraídos da página' })
+    async scrapeProduct(@Body('url') url: string) {
+        if (!url) throw new BadRequestException('URL é obrigatória');
+        return this.giftsService.scrapeProduct(url);
     }
 
     @Post(':id/reserve')
