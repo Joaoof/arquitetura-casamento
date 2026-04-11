@@ -2,6 +2,26 @@ import { Gift } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+type CreateAttendancePayload = {
+  fullName: string;
+  email: string;
+  phone?: string;
+  isAttending: boolean;
+  companions?: number;
+  message?: string;
+};
+
+export type Attendance = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  isAttending: boolean;
+  companions: number;
+  message?: string | null;
+  createdAt: string;
+};
+
 const withCoupleSlug = (path: string, coupleSlug?: string) => {
   if (!coupleSlug) return `${API_URL}${path}`;
 
@@ -10,12 +30,67 @@ const withCoupleSlug = (path: string, coupleSlug?: string) => {
 };
 
 export const api = {
+  async createAttendance(payload: CreateAttendancePayload) {
+    const response = await fetch(`${API_URL}/attendance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Falha ao enviar confirmação de presença');
+    }
+
+    return response.json();
+  },
+
   async getGifts(coupleSlug?: string): Promise<Gift[]> {
     const response = await fetch(withCoupleSlug('/gifts', coupleSlug), {
       method: 'GET',
     });
 
     if (!response.ok) throw new Error('Falha ao buscar presentes');
+    return response.json();
+  },
+
+  async getAttendanceAdmin(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    isAttending?: 'true' | 'false';
+  }): Promise<{ data: Attendance[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.search) query.set('search', params.search);
+    if (params?.isAttending) query.set('isAttending', params.isAttending);
+
+    const response = await fetch(`${API_URL}/attendance/admin${query.toString() ? `?${query.toString()}` : ''}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Falha ao buscar confirmações de presença');
+    return response.json();
+  },
+
+  async getAttendanceStats(): Promise<{
+    total: number;
+    confirmed: number;
+    declined: number;
+    totalExpectedGuests: number;
+  }> {
+    const response = await fetch(`${API_URL}/attendance/admin/stats`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Falha ao buscar estatísticas de presença');
     return response.json();
   },
 
