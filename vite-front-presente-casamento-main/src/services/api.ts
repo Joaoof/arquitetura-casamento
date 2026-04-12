@@ -93,6 +93,24 @@ export const api = {
     return response.json();
   },
 
+  async scrapeGift(url: string): Promise<{ name?: string; description?: string; imageUrl?: string; price?: number }> {
+    const response = await fetch(`${API_URL}/gifts/scrape`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Não foi possível buscar informações do produto');
+    }
+
+    return response.json();
+  },
+
   async createGift(gift: Omit<Gift, 'id' | 'createdAt' | 'status'>, coupleSlug?: string): Promise<Gift> {
     try {
       const response = await fetch(withCoupleSlug('/gifts', coupleSlug), {

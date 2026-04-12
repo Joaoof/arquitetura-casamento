@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Gift as GiftType } from '../types';
-import { Gift, ImagePlus, AlertCircle, X, DollarSign, AlignLeft, Flame, Minus, ChevronUp } from 'lucide-react';
+import { api } from '../services/api';
+import { Gift, ImagePlus, AlertCircle, X, Link, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface GiftFormProps {
   onSubmit: (gift: Omit<GiftType, 'id' | 'createdAt' | 'status'>) => void;
@@ -41,6 +42,26 @@ const GiftForm: React.FC<GiftFormProps> = ({
   const [price, setPrice] = useState(initialData.price?.toString() || '')
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>(initialData.priority || 'medium')
   const [previewError, setPreviewError] = useState(false)
+  const [importUrl, setImportUrl] = useState('')
+  const [importStatus, setImportStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [importError, setImportError] = useState('')
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) return
+    setImportStatus('loading')
+    setImportError('')
+    try {
+      const data = await api.scrapeGift(importUrl.trim())
+      if (data.name) setName(data.name)
+      if (data.description) setDescription(data.description)
+      if (data.imageUrl) { setImageUrl(data.imageUrl); setPreviewError(false) }
+      if (data.price) setPrice(String(data.price))
+      setImportStatus('success')
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Erro ao buscar produto')
+      setImportStatus('error')
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,6 +120,47 @@ const GiftForm: React.FC<GiftFormProps> = ({
         <form onSubmit={handleSubmit}
           className="flex flex-col gap-0 overflow-hidden rounded-b-xl"
           style={{ background: '#f4f7fb', border: '1px solid #dbe9f8', borderTop: 'none' }}>
+
+          {/* ── Importar de URL ── */}
+          <div className="px-5 pt-4 pb-3" style={{ borderBottom: '1px solid #dbe9f8', background: 'white' }}>
+            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#1B3A6B' }}>
+              <Link size={12} style={{ color: '#4A7AB5' }} />
+              Importar de URL do produto
+              <span className="font-normal ml-0.5" style={{ color: '#7AAFD4' }}>(opcional)</span>
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={importUrl}
+                onChange={e => { setImportUrl(e.target.value); setImportStatus('idle') }}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleImport())}
+                placeholder="Cole o link da Amazon, Mercado Livre, Shopee..."
+                className={`${inputCls} gf-input flex-1 text-xs`}
+                style={inputStyle}
+              />
+              <button
+                type="button"
+                onClick={handleImport}
+                disabled={!importUrl.trim() || importStatus === 'loading'}
+                className="flex-shrink-0 flex items-center gap-1.5 rounded-md px-4 py-2 text-xs font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', boxShadow: '0 2px 10px rgba(27,58,107,0.25)' }}
+              >
+                {importStatus === 'loading'
+                  ? <><Loader2 size={13} className="animate-spin" />Buscando...</>
+                  : <><Link size={13} />Buscar</>}
+              </button>
+            </div>
+            {importStatus === 'success' && (
+              <p className="mt-2 text-xs flex items-center gap-1" style={{ color: '#16a34a' }}>
+                <CheckCircle2 size={12} /> Campos preenchidos automaticamente! Revise e ajuste se necessário.
+              </p>
+            )}
+            {importStatus === 'error' && (
+              <p className="mt-2 text-xs flex items-center gap-1" style={{ color: '#dc2626' }}>
+                <AlertCircle size={12} /> {importError}
+              </p>
+            )}
+          </div>
 
           {/* Seção principal — grid 2 colunas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4 px-5 pt-5 pb-4">

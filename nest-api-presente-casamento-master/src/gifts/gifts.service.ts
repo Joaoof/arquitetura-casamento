@@ -376,6 +376,91 @@ export class GiftsService {
     }
 
     /**
+     * Faz scraping de informações de produto a partir de uma URL pública
+     */
+    async scrapeProduct(url: string): Promise<{
+        name?: string;
+        description?: string;
+        imageUrl?: string;
+        price?: number;
+    }> {
+        let html: string;
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+                },
+                signal: AbortSignal.timeout(10000),
+            });
+
+            if (!response.ok) {
+                throw new InternalServerErrorException('Não foi possível acessar a página do produto.');
+            }
+
+            html = await response.text();
+        } catch (err) {
+            if (err instanceof InternalServerErrorException) throw err;
+            throw new InternalServerErrorException(
+                'Erro ao buscar a página. Verifique a URL e tente novamente.',
+            );
+        }
+
+        const decodeHtml = (str: string) =>
+            str
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&apos;/g, "'")
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .trim();
+
+        const getMeta = (property: string): string | undefined => {
+            const patterns = [
+                new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
+                new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["']`, 'i'),
+                new RegExp(`<meta[^>]+name=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
+                new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${property}["']`, 'i'),
+            ];
+            for (const pattern of patterns) {
+                const match = html.match(pattern);
+                if (match?.[1]) return decodeHtml(match[1]);
+            }
+            return undefined;
+        };
+
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+
+        const name =
+            getMeta('og:title') ||
+            getMeta('twitter:title') ||
+            (titleMatch ? decodeHtml(titleMatch[1]) : undefined);
+
+        const description =
+            getMeta('og:description') ||
+            getMeta('twitter:description') ||
+            getMeta('description');
+
+        const imageUrl =
+            getMeta('og:image') ||
+            getMeta('twitter:image:src') ||
+            getMeta('twitter:image');
+
+        const rawPrice = getMeta('og:price:amount') || getMeta('product:price:amount');
+        let price: number | undefined;
+        if (rawPrice) {
+            const normalized = rawPrice.replace(/[^\d,.]/g, '').replace(',', '.');
+            const parsed = parseFloat(normalized);
+            if (!isNaN(parsed) && parsed > 0) price = parsed;
+        }
+
+        return { name, description, imageUrl, price };
+    }
+
+    /**
      * Atualiza cache manualmente (opcional)
      */
     async refreshCache() {
