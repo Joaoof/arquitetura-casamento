@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -305,6 +305,159 @@ export class AttendanceService {
     </tr>
   </table>
 
+</body>
+</html>`;
+  }
+
+  async remove(id: string) {
+    const existing = await this.prisma.attendance.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Confirmação ${id} não encontrada`);
+    return this.prisma.attendance.delete({ where: { id } });
+  }
+
+  async sendBulkEmail(
+    subject: string,
+    message: string,
+    filter: 'all' | 'confirmed' | 'declined' = 'all',
+  ): Promise<{ sent: number; failed: number; total: number }> {
+    const where: Prisma.AttendanceWhereInput = {};
+    if (filter === 'confirmed') where.isAttending = true;
+    if (filter === 'declined') where.isAttending = false;
+
+    const attendances = await this.prisma.attendance.findMany({ where, select: { fullName: true, email: true } });
+
+    const results = await Promise.allSettled(
+      attendances.map((a) =>
+        this.mailService.sendMail({
+          to: a.email,
+          subject,
+          html: this.buildBroadcastEmailHtml(a.fullName, message),
+        }),
+      ),
+    );
+
+    const sent = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    return { sent, failed, total: attendances.length };
+  }
+
+  private buildBroadcastEmailHtml(fullName: string, message: string): string {
+    const firstName = fullName.split(' ')[0];
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || '';
+    const photoUrl = frontendUrl ? `${frontendUrl}/img9.JPG` : '';
+
+    const photoBlock = photoUrl
+      ? `<tr>
+          <td style="padding:0;line-height:0;">
+            <img src="${photoUrl}" alt="Luís e Natiele" width="600"
+              style="display:block;width:100%;height:240px;object-fit:cover;object-position:top;" />
+          </td>
+        </tr>`
+      : '';
+
+    // Converte quebras de linha em <br> para o HTML
+    const htmlMessage = message.replace(/\n/g, '<br>');
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Luís &amp; Natiele</title>
+</head>
+<body style="margin:0;padding:0;background:#eef4fb;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+    style="background:#eef4fb;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" role="presentation"
+          style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;
+                 overflow:hidden;box-shadow:0 8px 40px rgba(27,58,107,0.12);">
+
+          <!-- HEADER -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1B3A6B 0%,#2a5298 55%,#4A7AB5 100%);
+                        padding:44px 48px 36px;text-align:center;">
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.4em;
+                         text-transform:uppercase;color:rgba(200,220,240,0.65);">
+                ✦ &nbsp; casamento &nbsp; ✦
+              </p>
+              <h1 style="margin:0 0 10px;font-size:38px;font-weight:300;letter-spacing:0.06em;
+                          color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
+                Luís &amp; Natiele
+              </h1>
+              <div style="display:inline-block;background:rgba(255,255,255,0.12);
+                           border:1px solid rgba(200,220,240,0.25);border-radius:100px;padding:6px 20px;margin-top:4px;">
+                <p style="margin:0;font-size:12px;color:rgba(200,220,240,0.85);letter-spacing:0.12em;">
+                  25 de Julho de 2026 &nbsp;·&nbsp; Araguaína, TO
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- FOTO -->
+          ${photoBlock}
+
+          <!-- CORPO -->
+          <tr>
+            <td style="padding:44px 48px 40px;">
+              <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:0.3em;
+                          text-transform:uppercase;color:#7AAFD4;">olá,</p>
+              <h2 style="margin:0 0 24px;font-size:28px;font-weight:700;color:#1B3A6B;
+                          font-family:Georgia,'Times New Roman',serif;">
+                ${firstName}! 💙
+              </h2>
+
+              <!-- Mensagem do admin -->
+              <div style="background:#f0f6ff;border-left:4px solid #4A7AB5;border-radius:0 12px 12px 0;
+                           padding:20px 24px;margin-bottom:32px;">
+                <p style="margin:0;font-size:15px;color:#1e293b;line-height:1.8;">
+                  ${htmlMessage}
+                </p>
+              </div>
+
+              <div style="height:1px;background:linear-gradient(90deg,transparent,#C8DCF0,transparent);margin:0 0 32px;"></div>
+
+              ${
+                frontendUrl
+                  ? `<div style="text-align:center;">
+                <a href="${frontendUrl}"
+                  style="display:inline-block;background:linear-gradient(135deg,#1B3A6B,#4A7AB5);color:#ffffff;
+                         text-decoration:none;font-size:14px;font-weight:700;padding:15px 36px;border-radius:100px;
+                         box-shadow:0 4px 20px rgba(27,58,107,0.3);letter-spacing:0.04em;">
+                  Ver Site do Casamento →
+                </a>
+              </div>`
+                  : ''
+              }
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1B3A6B,#2a5298);padding:36px 48px;text-align:center;">
+              <p style="margin:0 0 14px;font-size:22px;">💙</p>
+              <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:0.3em;
+                          text-transform:uppercase;color:rgba(200,220,240,0.6);">com amor,</p>
+              <h3 style="margin:0 0 10px;font-size:24px;font-weight:300;color:#ffffff;
+                          font-family:Georgia,'Times New Roman',serif;letter-spacing:0.06em;">
+                Luís &amp; Natiele
+              </h3>
+              <p style="margin:0;font-size:12px;color:rgba(200,220,240,0.5);letter-spacing:0.08em;">
+                25 de Julho de 2026 &nbsp;·&nbsp; Araguaína, TO
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+        <p style="margin:20px 0 0;font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;">
+          Você recebeu este e-mail por estar na lista de convidados de Luís &amp; Natiele.<br>
+          Caso tenha recebido por engano, ignore esta mensagem.
+        </p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
   }

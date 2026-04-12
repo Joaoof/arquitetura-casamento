@@ -7,7 +7,7 @@ import {
   Activity, Calendar, Heart, Sparkles, ArrowLeft, Gift,
   TrendingUp, TrendingDown, Bell, Search, RefreshCw,
   CheckCircle, Clock, AlertCircle, Star, Filter,
-  ChevronUp, Percent,
+  ChevronUp, Percent, Mail, Send, Loader2,
 } from 'lucide-react';
 import { exportToPdf } from '../helpers/export.helper';
 import { api, Attendance } from '../services/api';
@@ -97,6 +97,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'confirmed' | 'declined'>('all')
   const [attendanceLoading, setAttendanceLoading] = useState(false)
   const [attendanceError, setAttendanceError] = useState('')
+  const [deletingAttendanceId, setDeletingAttendanceId] = useState<string | null>(null)
+  const [bulkEmailOpen, setBulkEmailOpen] = useState(false)
+  const [bulkSubject, setBulkSubject] = useState('')
+  const [bulkMessage, setBulkMessage] = useState('')
+  const [bulkFilter, setBulkFilter] = useState<'all' | 'confirmed' | 'declined'>('all')
+  const [bulkStatus, setBulkStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [bulkResult, setBulkResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
   const [attendanceStats, setAttendanceStats] = useState({
     total: 0,
     confirmed: 0,
@@ -187,6 +194,42 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Excluir este presente?')) onDeleteGift(id)
+  }
+
+  const handleDeleteAttendance = async (id: string) => {
+    if (!window.confirm('Remover esta confirmação de presença?')) return
+    setDeletingAttendanceId(id)
+    try {
+      await api.deleteAttendance(id)
+      setAttendances(prev => prev.filter(a => a.id !== id))
+      setAttendanceStats(prev => ({
+        ...prev,
+        total: Math.max(0, prev.total - 1),
+      }))
+    } catch {
+      alert('Erro ao remover confirmação.')
+    } finally {
+      setDeletingAttendanceId(null)
+    }
+  }
+
+  const handleSendBulkEmail = async () => {
+    if (!bulkSubject.trim() || !bulkMessage.trim()) return
+    setBulkStatus('loading')
+    setBulkResult(null)
+    try {
+      const result = await api.sendBulkEmail({ subject: bulkSubject, message: bulkMessage, filter: bulkFilter })
+      setBulkResult(result)
+      setBulkStatus('success')
+    } catch {
+      setBulkStatus('error')
+    }
+  }
+
+  const closeBulkEmail = () => {
+    setBulkEmailOpen(false)
+    setBulkStatus('idle')
+    setBulkResult(null)
   }
 
   const NAV = [
@@ -651,14 +694,20 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       <option value="confirmed">Confirmados</option>
                       <option value="declined">Recusados</option>
                     </select>
+                    <button
+                      onClick={() => { setBulkEmailOpen(true); setBulkStatus('idle'); setBulkResult(null) }}
+                      className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white transition-all hover:-translate-y-0.5"
+                      style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', boxShadow: '0 4px 16px rgba(27,58,107,0.5)' }}>
+                      <Mail size={13} /> E-mail em Massa
+                    </button>
                   </div>
 
                   <div className="rounded-2xl overflow-hidden"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
                     <div className="grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
-                      style={{ gridTemplateColumns: '1.2fr 1fr 90px 90px 120px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
+                      style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
                       <span>Nome</span><span>E-mail</span><span className="text-center">Acomp.</span>
-                      <span className="text-center">Status</span><span className="text-right">Data</span>
+                      <span className="text-center">Status</span><span className="text-right">Data</span><span />
                     </div>
                     <div className="max-h-[420px] overflow-y-auto">
                       {attendanceLoading && (
@@ -682,7 +731,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       {!attendanceLoading && !attendanceError && filteredAttendances.map((attendance, index) => (
                         <div key={attendance.id}
                           className="adm-row grid px-5 py-3 items-center transition-colors"
-                          style={{ gridTemplateColumns: '1.2fr 1fr 90px 90px 120px', background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
+                          style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px', background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
                           <div className="min-w-0">
                             <p className="truncate text-xs font-semibold" style={{ color: 'rgba(200,220,240,0.9)' }}>{attendance.fullName}</p>
                             {attendance.message && (
@@ -702,6 +751,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                           <p className="text-right text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>
                             {new Date(attendance.createdAt).toLocaleDateString('pt-BR')}
                           </p>
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleDeleteAttendance(attendance.id)}
+                              disabled={deletingAttendanceId === attendance.id}
+                              className="flex items-center justify-center rounded-lg p-1.5 transition-all hover:scale-110 disabled:opacity-40"
+                              style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.25)', color: '#f87171' }}
+                              title="Remover confirmação">
+                              {deletingAttendanceId === attendance.id
+                                ? <Loader2 size={11} className="animate-spin" />
+                                : <Trash2 size={11} />}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -838,6 +899,148 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Modal E-mail em Massa ── */}
+      {bulkEmailOpen && (
+        <>
+          <div className="fixed inset-0 z-[80]" style={{ background: 'rgba(5,12,30,0.75)', backdropFilter: 'blur(8px)' }}
+            onClick={closeBulkEmail} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+            <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+              style={{ background: 'linear-gradient(160deg,#0d1f3c,#162d52)' }}>
+
+              {/* Header do modal */}
+              <div className="flex items-center justify-between px-6 py-4"
+                style={{ borderBottom: '1px solid rgba(200,220,240,0.08)', background: 'linear-gradient(135deg,#1B3A6B,#2a5298)' }}>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg"
+                    style={{ background: 'rgba(200,220,240,0.15)' }}>
+                    <Mail size={15} style={{ color: '#C8DCF0' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">E-mail em Massa</h3>
+                    <p className="text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>
+                      Envie um recado para seus convidados
+                    </p>
+                  </div>
+                </div>
+                <button onClick={closeBulkEmail}
+                  className="rounded-lg p-1.5 transition-colors hover:bg-white/10"
+                  style={{ color: 'rgba(200,220,240,0.6)' }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Corpo do modal */}
+              {bulkStatus === 'success' && bulkResult ? (
+                <div className="px-6 py-8 text-center">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
+                    style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)' }}>
+                    <CheckCircle size={28} style={{ color: '#4ade80' }} />
+                  </div>
+                  <p className="text-base font-bold text-white mb-1">E-mails enviados!</p>
+                  <p className="text-sm mb-4" style={{ color: 'rgba(200,220,240,0.6)' }}>
+                    <span style={{ color: '#4ade80' }}>{bulkResult.sent}</span> enviados
+                    {bulkResult.failed > 0 && (
+                      <> · <span style={{ color: '#fb923c' }}>{bulkResult.failed}</span> falharam</>
+                    )}
+                    {' '}de {bulkResult.total} no total
+                  </p>
+                  <button onClick={closeBulkEmail}
+                    className="rounded-xl px-6 py-2 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)' }}>
+                    Fechar
+                  </button>
+                </div>
+              ) : (
+                <div className="px-6 py-5 space-y-4">
+                  {/* Filtro de destinatários */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest mb-2 block"
+                      style={{ color: 'rgba(200,220,240,0.5)' }}>Enviar para</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { val: 'all', label: 'Todos', count: attendanceStats.total },
+                        { val: 'confirmed', label: 'Confirmados', count: attendanceStats.confirmed },
+                        { val: 'declined', label: 'Recusados', count: attendanceStats.declined },
+                      ] as const).map(({ val, label, count }) => (
+                        <button key={val} type="button"
+                          onClick={() => setBulkFilter(val)}
+                          className="rounded-xl py-2 px-2 text-[11px] font-bold transition-all"
+                          style={bulkFilter === val ? {
+                            background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)',
+                            color: 'white', border: '1px solid #4A7AB5',
+                          } : {
+                            background: 'rgba(255,255,255,0.05)', color: 'rgba(200,220,240,0.6)',
+                            border: '1px solid rgba(200,220,240,0.1)',
+                          }}>
+                          {label}
+                          <span className="block text-[10px] font-normal opacity-75">{count} pessoa(s)</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assunto */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest mb-1.5 block"
+                      style={{ color: 'rgba(200,220,240,0.5)' }}>Assunto</label>
+                    <input
+                      value={bulkSubject}
+                      onChange={e => setBulkSubject(e.target.value)}
+                      placeholder="Ex: Novidade sobre o casamento!"
+                      className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,220,240,0.1)', color: 'rgba(200,220,240,0.9)', caretColor: '#4A7AB5' }}
+                    />
+                  </div>
+
+                  {/* Mensagem */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest mb-1.5 block"
+                      style={{ color: 'rgba(200,220,240,0.5)' }}>Mensagem</label>
+                    <textarea
+                      value={bulkMessage}
+                      onChange={e => setBulkMessage(e.target.value)}
+                      placeholder="Olá! Temos uma novidade para compartilhar com vocês..."
+                      rows={5}
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,220,240,0.1)', color: 'rgba(200,220,240,0.9)', caretColor: '#4A7AB5' }}
+                    />
+                    <p className="text-[10px] mt-1" style={{ color: 'rgba(200,220,240,0.35)' }}>
+                      A mensagem será enviada com o template visual do casamento.
+                    </p>
+                  </div>
+
+                  {bulkStatus === 'error' && (
+                    <p className="text-xs flex items-center gap-1.5 rounded-xl px-3 py-2"
+                      style={{ background: 'rgba(220,38,38,0.1)', color: '#f87171', border: '1px solid rgba(220,38,38,0.2)' }}>
+                      <AlertCircle size={13} /> Erro ao enviar e-mails. Verifique as configurações de SMTP.
+                    </p>
+                  )}
+
+                  {/* Botões */}
+                  <div className="flex gap-3 pt-1">
+                    <button onClick={closeBulkEmail}
+                      className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all"
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(200,220,240,0.7)', border: '1px solid rgba(200,220,240,0.1)' }}>
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSendBulkEmail}
+                      disabled={!bulkSubject.trim() || !bulkMessage.trim() || bulkStatus === 'loading'}
+                      className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', boxShadow: '0 4px 16px rgba(27,58,107,0.4)' }}>
+                      {bulkStatus === 'loading'
+                        ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
+                        : <><Send size={14} /> Enviar</>}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Toast ── */}

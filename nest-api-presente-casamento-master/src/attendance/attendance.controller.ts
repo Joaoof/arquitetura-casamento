@@ -1,15 +1,19 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
+  Param,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -77,5 +81,40 @@ export class AttendanceController {
   })
   stats() {
     return this.attendanceService.stats();
+  }
+
+  @Post('admin/bulk-email')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Envia e-mail para os convidados cadastrados' })
+  @ApiBody({
+    schema: {
+      example: {
+        subject: 'Novidade do casamento!',
+        message: 'Olá! Temos um recado importante...',
+        filter: 'all',
+      },
+    },
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: '{ sent, failed, total }' })
+  sendBulkEmail(
+    @Body('subject') subject: string,
+    @Body('message') message: string,
+    @Body('filter') filter: 'all' | 'confirmed' | 'declined' = 'all',
+  ) {
+    return this.attendanceService.sendBulkEmail(subject, message, filter);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remove uma confirmação de presença' })
+  @ApiParam({ name: 'id', description: 'ID da confirmação' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Confirmação removida com sucesso',
+  })
+  remove(@Param('id') id: string) {
+    return this.attendanceService.remove(id);
   }
 }
