@@ -85,6 +85,16 @@ export const useGifts = (coupleSlug?: string) => {
     }
   };
 
+  const removeAllGifts = async () => {
+    try {
+      await api.deleteAllGifts();
+      setGifts([]);
+    } catch (error) {
+      console.error('Error removing all gifts:', error);
+      throw error;
+    }
+  };
+
   const reserveGift = async (id: string, reservedBy: string) => {
     try {
       const updatedGift = await api.reserveGift(id, reservedBy, coupleSlug);
@@ -114,6 +124,7 @@ export const useGifts = (coupleSlug?: string) => {
     addGift,
     updateGift,
     removeGift,
+    removeAllGifts,
     reserveGift,
     searchTerm,
     setSearchTerm,

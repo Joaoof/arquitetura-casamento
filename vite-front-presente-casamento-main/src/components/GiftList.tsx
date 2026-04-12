@@ -333,17 +333,34 @@ const GiftList: React.FC<GiftListProps> = ({
         </div>
       ) : paginatedGifts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(200,220,240,0.3)' }}>
-            <Search size={24} style={{ color: '#7AAFD4' }} />
-          </div>
-          <p className="text-sm" style={{ color: '#7AAFD4' }}>
-            {gifts.length === 0 ? 'Nenhum presente encontrado.' : 'Nenhum presente corresponde aos filtros.'}
-          </p>
-          {isAdmin && gifts.length === 0 && (
-            <p className="text-xs" style={{ color: '#7AAFD4' }}>
-              Adicione presentes à lista clicando no botão acima.
-            </p>
+          {!isAdmin && gifts.length === 0 ? (
+            <>
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-1"
+                style={{ background: 'rgba(200,220,240,0.15)', border: '1.5px dashed rgba(200,220,240,0.3)' }}>
+                <span style={{ fontSize: 36 }}>🎁</span>
+              </div>
+              <p className="text-base font-semibold text-center" style={{ color: '#C8DCF0', fontFamily: 'Playfair Display, serif' }}>
+                Em breve…
+              </p>
+              <p className="text-sm text-center max-w-xs" style={{ color: '#7AAFD4' }}>
+                Logo mais disponibilizaremos os presentes!
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(200,220,240,0.3)' }}>
+                <Search size={24} style={{ color: '#7AAFD4' }} />
+              </div>
+              <p className="text-sm" style={{ color: '#7AAFD4' }}>
+                {gifts.length === 0 ? 'Nenhum presente encontrado.' : 'Nenhum presente corresponde aos filtros.'}
+              </p>
+              {isAdmin && gifts.length === 0 && (
+                <p className="text-xs" style={{ color: '#7AAFD4' }}>
+                  Adicione presentes à lista clicando no botão acima.
+                </p>
+              )}
+            </>
           )}
         </div>
       ) : (

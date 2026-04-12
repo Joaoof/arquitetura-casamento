@@ -13,6 +13,7 @@ import LoginModal from './components/LoginModal'
 import PhotoCarousel from './components/PhotosCarousel'
 import OurStory from './components/OurStory'
 import RSVP from './components/RSVP'
+import SplashScreen from './components/SplashScreen'
 
 import './styles/animations.css'
 import WelcomeBanner from './components/WelcomeBanner'
@@ -25,7 +26,7 @@ function HomePage() {
 
   const { isAuthenticated, logout } = useAuth()
   const {
-    gifts, addGift, updateGift, removeGift, reserveGift,
+    gifts, addGift, updateGift, removeGift, removeAllGifts, reserveGift,
     searchTerm, setSearchTerm, filter, setFilter,
   } = useGifts(normalizedCoupleSlug)
 
@@ -65,6 +66,7 @@ function HomePage() {
             onAddGift={handleSubmitEdit}
             onUpdateGift={updateGift}
             onDeleteGift={removeGift}
+            onDeleteAllGifts={removeAllGifts}
             giftToEdit={giftToEdit}
             onCancelEdit={handleCancelEdit}
           />
@@ -95,17 +97,22 @@ function HomePage() {
 }
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false)
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}`} replace />} />
-          <Route path="/rsvp" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}/rsvp`} replace />} />
-          <Route path="/:coupleSlug" element={<HomePage />} />
-          <Route path="/:coupleSlug/rsvp" element={<RSVP />} />
-          <Route path="*" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}`} replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <>
+      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}`} replace />} />
+            <Route path="/rsvp" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}/rsvp`} replace />} />
+            <Route path="/:coupleSlug" element={<HomePage />} />
+            <Route path="/:coupleSlug/rsvp" element={<RSVP />} />
+            <Route path="*" element={<Navigate to={`/${DEFAULT_COUPLE_SLUG}`} replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </>
   )
 }

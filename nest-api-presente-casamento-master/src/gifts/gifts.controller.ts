@@ -180,6 +180,15 @@ export class GiftsController {
         };
     }
 
+    @Delete('admin/all')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Remove todos os presentes' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Todos os presentes removidos' })
+    async removeAll(): Promise<{ count: number }> {
+        return this.giftsService.removeAll();
+    }
+
     @Delete(':id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

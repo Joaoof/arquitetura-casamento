@@ -241,6 +241,20 @@ export class GiftsService {
     }
 
     /**
+     * Remove todos os presentes
+     */
+    async removeAll(): Promise<{ count: number }> {
+        try {
+            const result = await this.prisma.gift.deleteMany({});
+            await this.invalidateCache();
+            return { count: result.count };
+        } catch (error) {
+            console.error('Erro ao remover todos os presentes:', error);
+            throw new Error('Falha ao excluir todos os presentes');
+        }
+    }
+
+    /**
      * Remove presente
      */
     async remove(id: string): Promise<Gift> {
