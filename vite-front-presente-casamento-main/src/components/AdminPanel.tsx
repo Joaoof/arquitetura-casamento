@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Gift as GiftType } from '../types';
 import GiftForm from './GiftForm';
 import {
@@ -110,7 +110,70 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     declined: 0,
     totalExpectedGuests: 0,
   })
-  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // ── Notificações ──────────────────────────────────────────
+  const [notifications, setNotifications] = useState<(Attendance & { read: boolean })[]>([])
+  const [notifOpen, setNotifOpen]         = useState(false)
+  const [selectedNotif, setSelectedNotif] = useState<Attendance | null>(null)
+  const [bellShake, setBellShake]         = useState(false)
+  const seenIdsRef  = useRef<Set<string>>(new Set())
+  const notifRef    = useRef<HTMLDivElement>(null)
+  const tickRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Seed inicial: marca todos os RSVPs atuais como "já vistos"
+  useEffect(() => {
+    api.getAttendanceAdmin({ page: 1, limit: 100 })
+      .then(res => res.data.forEach(a => seenIdsRef.current.add(a.id)))
+      .catch(() => {})
+  }, [])
+
+  // Polling a cada 30 s — detecta novos RSVPs e gera notificações
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await api.getAttendanceAdmin({ page: 1, limit: 20 })
+        const fresh = res.data.filter(a => !seenIdsRef.current.has(a.id))
+        if (fresh.length > 0) {
+          fresh.forEach(a => seenIdsRef.current.add(a.id))
+          setNotifications(prev =>
+            [...fresh.map(a => ({ ...a, read: false })), ...prev].slice(0, 40)
+          )
+          // Atualiza lista de attendances se painel estiver aberto
+          setAttendances(prev => {
+            const existingIds = new Set(prev.map(a => a.id))
+            return [...fresh.filter(a => !existingIds.has(a.id)), ...prev]
+          })
+          // Animação no sino
+          setBellShake(true)
+          setTimeout(() => setBellShake(false), 1000)
+        }
+      } catch {}
+    }
+    const id = setInterval(poll, 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const openNotif = useCallback((notif: Attendance & { read: boolean }) => {
+    setSelectedNotif(notif)
+    setNotifOpen(false)
+    setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))
+  }, [])
+
+  const markAllRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  }, [])
 
   useEffect(() => {
     tickRef.current = setInterval(() => setNow(new Date()), 1000)
@@ -255,29 +318,50 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   return (
     <>
       <style>{`
-        @keyframes slideAdmin { from { opacity:0; transform:translateX(100%) } to { opacity:1; transform:translateX(0) } }
-        @keyframes fadeUp     { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes pulseGlow  { 0%,100% { box-shadow:0 0 0 0 rgba(74,122,181,0.5) } 50% { box-shadow:0 0 0 8px rgba(74,122,181,0) } }
-        .adm-panel   { animation: slideAdmin 0.4s cubic-bezier(0.34,1.1,0.64,1) both }
-        .adm-fadeup  { animation: fadeUp 0.35s ease both }
-        .adm-row:hover { background: rgba(200,220,240,0.06) !important }
-        .adm-nav:hover { background: rgba(255,255,255,0.07) !important }
-        .adm-fab     { animation: pulseGlow 2.5s infinite }
-        ::-webkit-scrollbar { width: 4px }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+        .adm-root    { font-family: 'Open Sans', sans-serif; }
+        .adm-heading { font-family: 'Poppins', sans-serif; }
+        @keyframes slideAdmin  { from { opacity:0; transform:translateX(100%) } to { opacity:1; transform:translateX(0) } }
+        @keyframes fadeUp      { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes slideDown   { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes pulseGlow   { 0%,100% { box-shadow:0 0 0 0 rgba(74,122,181,0.5) } 50% { box-shadow:0 0 0 8px rgba(74,122,181,0) } }
+        @keyframes bellShake   { 0%,100%{transform:rotate(0)} 15%{transform:rotate(12deg)} 30%{transform:rotate(-10deg)} 45%{transform:rotate(8deg)} 60%{transform:rotate(-6deg)} 75%{transform:rotate(4deg)} 90%{transform:rotate(-2deg)} }
+        @keyframes notifPop    { 0%{opacity:0;transform:scale(0.85) translateY(8px)} 70%{transform:scale(1.04) translateY(-2px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes msgFloat    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+        .adm-panel      { animation: slideAdmin 0.4s cubic-bezier(0.34,1.1,0.64,1) both }
+        .adm-fadeup     { animation: fadeUp 0.35s ease both }
+        .adm-notif-drop { animation: slideDown 0.2s ease both }
+        .adm-notif-card { animation: notifPop 0.35s cubic-bezier(0.34,1.3,0.64,1) both }
+        .adm-msg-float  { animation: msgFloat 3s ease-in-out infinite }
+        .adm-bell-shake { animation: bellShake 0.7s ease }
+        .adm-row:hover  { background: rgba(200,220,240,0.06) !important }
+        .adm-nav:hover  { background: rgba(255,255,255,0.07) !important }
+        .adm-notif-item:hover { background: rgba(255,255,255,0.06) !important }
+        .adm-fab        { animation: pulseGlow 2.5s infinite }
+        ::-webkit-scrollbar       { width: 4px }
         ::-webkit-scrollbar-track { background: transparent }
         ::-webkit-scrollbar-thumb { background: rgba(200,220,240,0.2); border-radius: 4px }
       `}</style>
 
       {/* ── FAB ── */}
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40">
+      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2">
+        {/* Sino flutuante independente */}
+        {unreadCount > 0 && (
+          <button
+            onClick={() => { setIsOpen(true); setTimeout(() => setNotifOpen(true), 100) }}
+            className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-white transition-all hover:scale-110"
+            style={{ background: 'linear-gradient(135deg,#e07c3a,#f59e0b)', boxShadow: '0 4px 16px rgba(224,124,58,0.5)' }}>
+            <Bell size={18} className={bellShake ? 'adm-bell-shake' : ''} />
+            <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
+              style={{ background: '#dc2626', fontFamily: 'Poppins, sans-serif' }}>
+              {unreadCount}
+            </span>
+          </button>
+        )}
         <button onClick={() => setIsOpen(o => !o)}
-          className="adm-fab group flex h-13 w-13 items-center justify-center rounded-2xl text-white transition-all duration-300 hover:scale-110"
+          className="adm-fab group relative flex h-13 w-13 items-center justify-center rounded-2xl text-white transition-all duration-300 hover:scale-110"
           style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', width: 52, height: 52 }}>
           <Settings size={20} className="group-hover:rotate-90 transition-transform duration-500" />
-          {stats.reserved > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
-              style={{ background: '#e07c3a' }}>{stats.reserved}</span>
-          )}
         </button>
       </div>
 
@@ -384,34 +468,121 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </div>
 
           {/* ════ ÁREA PRINCIPAL ════ */}
-          <div className="flex flex-1 flex-col overflow-hidden"
+          <div className="adm-root flex flex-1 flex-col overflow-hidden"
             style={{ background: '#0b1628' }}>
 
             {/* Topbar */}
             <div className="flex flex-shrink-0 items-center justify-between px-5 py-3.5"
               style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(200,220,240,0.07)' }}>
               <div>
-                <h2 className="text-sm font-black text-white">
+                <h2 className="text-sm font-black text-white adm-heading">
                   {activeTab === 'dashboard' && '👋 Bem-vindo ao Dashboard'}
                   {activeTab === 'analytics' && '📊 Analytics Detalhado'}
                   {activeTab === 'attendance' && '📝 Confirmações de Presença (RSVP)'}
                   {activeTab === 'manage' && '🎁 Gerenciar Presentes'}
                   {activeTab === 'form' && (giftToEdit ? '✏️ Editar Presente' : '➕ Novo Presente')}
                 </h2>
-                <p className="text-[10px]" style={{ color: 'rgba(200,220,240,0.35)' }}>
+                <p className="text-[10px]" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>
                   Casamento · 25/07/2026 · Araguaína, TO
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 rounded-xl px-3 py-2"
-                  style={{ background: 'rgba(200,220,240,0.06)', border: '1px solid rgba(200,220,240,0.1)' }}>
-                  <Bell size={14} style={{ color: 'rgba(200,220,240,0.4)' }} />
-                  {stats.reserved > 0 && (
-                    <span className="text-[9px] font-black" style={{ color: '#e07c3a' }}>
-                      {stats.reserved} reserva(s)
-                    </span>
+                {/* ── Sino / Dropdown de notificações ── */}
+                <div className="relative" ref={notifRef}>
+                  <button
+                    onClick={() => { setNotifOpen(o => !o); if (!notifOpen) markAllRead() }}
+                    className="relative flex items-center gap-2 rounded-xl px-3 py-2 transition-all hover:bg-white/10"
+                    style={{ background: 'rgba(200,220,240,0.06)', border: `1px solid ${unreadCount > 0 ? 'rgba(224,124,58,0.4)' : 'rgba(200,220,240,0.1)'}` }}>
+                    <Bell
+                      size={15}
+                      className={bellShake ? 'adm-bell-shake' : ''}
+                      style={{ color: unreadCount > 0 ? '#f59e0b' : 'rgba(200,220,240,0.4)' }}
+                    />
+                    {unreadCount > 0 && (
+                      <span className="text-[9px] font-black" style={{ color: '#f59e0b', fontFamily: 'Poppins, sans-serif' }}>
+                        {unreadCount} nova{unreadCount > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full"
+                        style={{ background: '#dc2626' }}>
+                        <span className="h-2 w-2 rounded-full animate-ping" style={{ background: '#dc2626', opacity: 0.75 }} />
+                      </span>
+                    )}
+                  </button>
+
+                  {/* ── Dropdown ── */}
+                  {notifOpen && (
+                    <div className="adm-notif-drop absolute right-0 top-full mt-2 z-[70] rounded-2xl overflow-hidden"
+                      style={{ width: 320, background: 'linear-gradient(160deg,#0d1e3c,#102040)', border: '1px solid rgba(200,220,240,0.12)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-4 py-3"
+                        style={{ borderBottom: '1px solid rgba(200,220,240,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+                        <p className="text-xs font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          Notificações
+                        </p>
+                        {notifications.length > 0 && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full"
+                            style={{ background: 'rgba(74,122,181,0.2)', color: '#7AAFD4', fontFamily: 'Poppins, sans-serif' }}>
+                            {notifications.length} RSVP{notifications.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Lista */}
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <div className="py-10 flex flex-col items-center gap-3">
+                            <Bell size={28} style={{ color: 'rgba(200,220,240,0.15)' }} />
+                            <p className="text-xs text-center" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>
+                              Nenhuma notificação ainda.<br />Novos RSVPs aparecerão aqui.
+                            </p>
+                          </div>
+                        ) : notifications.map((notif, i) => (
+                          <button key={notif.id}
+                            onClick={() => openNotif(notif)}
+                            className="adm-notif-item w-full flex items-start gap-3 px-4 py-3 text-left transition-colors"
+                            style={{ borderBottom: '1px solid rgba(200,220,240,0.05)', animationDelay: `${i * 40}ms` }}>
+                            {/* Avatar */}
+                            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-black text-white"
+                              style={{ background: notif.isAttending ? 'linear-gradient(135deg,#1B3A6B,#4A7AB5)' : 'rgba(200,220,240,0.12)', fontFamily: 'Poppins, sans-serif' }}>
+                              {notif.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-white truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                {notif.fullName}
+                              </p>
+                              <p className="text-[10px] mt-0.5" style={{ color: notif.isAttending ? '#4ade80' : '#fb923c', fontFamily: 'Open Sans, sans-serif' }}>
+                                {notif.isAttending ? '✓ Confirmou presença' : '✗ Não poderá comparecer'}
+                              </p>
+                              {notif.message && (
+                                <p className="text-[10px] truncate mt-0.5 italic" style={{ color: 'rgba(200,220,240,0.45)', fontFamily: 'Open Sans, sans-serif' }}>
+                                  "{notif.message}"
+                                </p>
+                              )}
+                            </div>
+                            {!notif.read && (
+                              <div className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+                                style={{ background: '#4A7AB5' }} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      {notifications.length > 0 && (
+                        <div className="px-4 py-2.5" style={{ borderTop: '1px solid rgba(200,220,240,0.08)' }}>
+                          <button
+                            onClick={() => { setActiveTab('attendance'); setNotifOpen(false) }}
+                            className="w-full text-center text-[10px] font-semibold transition-colors hover:text-white"
+                            style={{ color: '#7AAFD4', fontFamily: 'Poppins, sans-serif' }}>
+                            Ver todos os RSVPs →
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
+
                 <button onClick={() => { setIsOpen(false); onCancelEdit() }}
                   className="rounded-xl p-2 transition-colors hover:bg-white/10"
                   style={{ color: 'rgba(200,220,240,0.4)' }}>
@@ -899,6 +1070,129 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Modal Detalhe RSVP ── */}
+      {selectedNotif && (
+        <>
+          <div className="fixed inset-0 z-[100]"
+            style={{ background: 'rgba(5,12,30,0.82)', backdropFilter: 'blur(10px)' }}
+            onClick={() => setSelectedNotif(null)} />
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <div className="adm-notif-card w-full max-w-[420px] rounded-2xl overflow-hidden shadow-2xl adm-root"
+              style={{ background: 'linear-gradient(160deg,#0d1f3c,#162d52)', border: '1px solid rgba(200,220,240,0.14)', boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}>
+
+              {/* Header com avatar */}
+              <div className="relative px-6 pt-6 pb-5"
+                style={{ background: 'linear-gradient(135deg,#1B3A6B 0%,#2a5298 60%,#4A7AB5 100%)' }}>
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-black text-white"
+                    style={{ background: 'rgba(200,220,240,0.18)', border: '2px solid rgba(200,220,240,0.25)', fontFamily: 'Poppins, sans-serif' }}>
+                    {selectedNotif.fullName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-black text-white truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      {selectedNotif.fullName}
+                    </p>
+                    <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(200,220,240,0.6)', fontFamily: 'Open Sans, sans-serif' }}>
+                      {selectedNotif.email}
+                    </p>
+                    <p className="text-[10px] mt-1" style={{ color: 'rgba(200,220,240,0.4)', fontFamily: 'Open Sans, sans-serif' }}>
+                      {new Date(selectedNotif.createdAt).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })} às{' '}
+                      {new Date(selectedNotif.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedNotif(null)}
+                  className="absolute right-4 top-4 rounded-lg p-1.5 transition-colors hover:bg-white/10"
+                  style={{ color: 'rgba(200,220,240,0.55)' }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Badge de status */}
+              <div style={{ background: selectedNotif.isAttending ? 'linear-gradient(90deg,rgba(14,92,64,0.7),rgba(26,122,82,0.4))' : 'linear-gradient(90deg,rgba(120,53,15,0.5),rgba(192,80,14,0.2))', padding: '9px 24px' }}>
+                <p className="text-[11px] font-bold tracking-widest uppercase"
+                  style={{ color: selectedNotif.isAttending ? '#4ade80' : '#fb923c', fontFamily: 'Poppins, sans-serif' }}>
+                  {selectedNotif.isAttending ? '✓  Presença Confirmada' : '✗  Não Poderá Comparecer'}
+                </p>
+              </div>
+
+              {/* Info cards */}
+              <div className="px-6 py-5 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                    <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(200,220,240,0.4)', fontFamily: 'Poppins, sans-serif' }}>
+                      Acompanhantes
+                    </p>
+                    <p className="text-3xl font-black" style={{ color: '#C8DCF0', fontFamily: 'Poppins, sans-serif' }}>
+                      {selectedNotif.companions}
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>
+                      {selectedNotif.companions === 0 ? 'só eu' : `+${selectedNotif.companions} pessoa(s)`}
+                    </p>
+                  </div>
+                  {selectedNotif.phone ? (
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(200,220,240,0.4)', fontFamily: 'Poppins, sans-serif' }}>
+                        Telefone
+                      </p>
+                      <p className="text-sm font-bold" style={{ color: '#C8DCF0', fontFamily: 'Open Sans, sans-serif' }}>
+                        {selectedNotif.phone}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(200,220,240,0.4)', fontFamily: 'Poppins, sans-serif' }}>
+                        Total esperado
+                      </p>
+                      <p className="text-3xl font-black" style={{ color: '#C8DCF0', fontFamily: 'Poppins, sans-serif' }}>
+                        {selectedNotif.companions + 1}
+                      </p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>pessoa(s)</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mensagem ao casal — flutuante */}
+                {selectedNotif.message ? (
+                  <div className="adm-msg-float rounded-2xl p-4 relative overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg,rgba(27,58,107,0.35),rgba(74,122,181,0.15))', border: '1px solid rgba(74,122,181,0.25)' }}>
+                    {/* Deco */}
+                    <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-10"
+                      style={{ background: 'radial-gradient(circle,#4A7AB5,transparent)' }} />
+                    <div className="flex items-center gap-2 mb-3">
+                      <Heart size={12} fill="#4A7AB5" style={{ color: '#4A7AB5' }} />
+                      <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#7AAFD4', fontFamily: 'Poppins, sans-serif' }}>
+                        Mensagem ao Casal
+                      </p>
+                    </div>
+                    <p className="text-sm leading-relaxed italic" style={{ color: 'rgba(200,220,240,0.88)', fontFamily: 'Open Sans, sans-serif', fontStyle: 'italic' }}>
+                      "{selectedNotif.message}"
+                    </p>
+                    <p className="text-[11px] mt-3 text-right font-semibold" style={{ color: 'rgba(200,220,240,0.45)', fontFamily: 'Poppins, sans-serif' }}>
+                      — {selectedNotif.fullName.split(' ')[0]}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-xl px-4 py-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(200,220,240,0.1)' }}>
+                    <p className="text-xs" style={{ color: 'rgba(200,220,240,0.3)', fontFamily: 'Open Sans, sans-serif' }}>
+                      Nenhuma mensagem ao casal.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 pb-5">
+                <button onClick={() => setSelectedNotif(null)}
+                  className="w-full rounded-xl py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', boxShadow: '0 4px 20px rgba(27,58,107,0.4)', fontFamily: 'Poppins, sans-serif' }}>
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Modal E-mail em Massa ── */}
