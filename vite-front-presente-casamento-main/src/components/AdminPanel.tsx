@@ -358,13 +358,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         .adm-nav:hover  { background: rgba(255,255,255,0.07) !important }
         .adm-notif-item:hover { background: rgba(255,255,255,0.06) !important }
         .adm-fab        { animation: pulseGlow 2.5s infinite }
+        .adm-mob-tab.active { color: #4A7AB5 !important; background: rgba(74,122,181,0.12) !important; }
         ::-webkit-scrollbar       { width: 4px }
         ::-webkit-scrollbar-track { background: transparent }
         ::-webkit-scrollbar-thumb { background: rgba(200,220,240,0.2); border-radius: 4px }
       `}</style>
 
       {/* ── FAB ── */}
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2">
+      <div className="fixed right-4 bottom-6 md:right-5 md:top-1/2 md:bottom-auto md:-translate-y-1/2 z-40 flex flex-col items-center gap-2">
         {/* Sino flutuante independente */}
         {unreadCount > 0 && (
           <button
@@ -397,8 +398,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <div className="adm-panel fixed right-0 top-0 z-[60] flex h-full"
           style={{ width: 'min(100vw, 900px)', boxShadow: '-8px 0 48px rgba(0,0,0,0.6)' }}>
 
-          {/* ════ SIDEBAR ESCURA ════ */}
-          <div className="flex w-[200px] flex-shrink-0 flex-col"
+          {/* ════ SIDEBAR ESCURA ════ — hidden on mobile */}
+          <div className="hidden md:flex w-[200px] flex-shrink-0 flex-col"
             style={{ background: 'linear-gradient(180deg,#080f24 0%,#0d1e3d 50%,#0a1628 100%)' }}>
 
             {/* Logo */}
@@ -492,17 +493,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             style={{ background: '#0b1628' }}>
 
             {/* Topbar */}
-            <div className="flex flex-shrink-0 items-center justify-between px-5 py-3.5"
+            <div className="flex flex-shrink-0 items-center justify-between px-4 md:px-5 py-3"
               style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(200,220,240,0.07)' }}>
-              <div>
-                <h2 className="text-sm font-black text-white adm-heading">
-                  {activeTab === 'dashboard' && '👋 Bem-vindo ao Dashboard'}
-                  {activeTab === 'analytics' && '📊 Analytics Detalhado'}
-                  {activeTab === 'attendance' && '📝 Confirmações de Presença (RSVP)'}
+              <div className="min-w-0">
+                <h2 className="text-xs md:text-sm font-black text-white adm-heading truncate">
+                  {activeTab === 'dashboard' && '👋 Dashboard'}
+                  {activeTab === 'analytics' && '📊 Analytics'}
+                  {activeTab === 'attendance' && '📝 RSVP'}
                   {activeTab === 'manage' && '🎁 Gerenciar Presentes'}
                   {activeTab === 'form' && (giftToEdit ? '✏️ Editar Presente' : '➕ Novo Presente')}
                 </h2>
-                <p className="text-[10px]" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>
+                <p className="hidden md:block text-[10px]" style={{ color: 'rgba(200,220,240,0.35)', fontFamily: 'Open Sans, sans-serif' }}>
                   Casamento · 25/07/2026 · Araguaína, TO
                 </p>
               </div>
@@ -612,7 +613,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </div>
 
             {/* Conteúdo */}
-            <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="flex-1 overflow-y-auto px-3 py-4 md:px-5 md:py-5 pb-20 md:pb-5">
 
               {/* ══ DASHBOARD ══ */}
               {activeTab === 'dashboard' && (
@@ -733,41 +734,45 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                         className="text-[10px] font-semibold transition-colors hover:underline"
                         style={{ color: '#4A7AB5' }}>Ver todos →</button>
                     </div>
-                    <div className="grid px-5 py-2 text-[9px] font-bold uppercase tracking-widest"
-                      style={{ gridTemplateColumns: '1fr 80px 80px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.05)' }}>
-                      <span>Presente</span><span className="text-right">Preço</span><span className="text-center">Status</span>
-                    </div>
-                    {gifts.slice(-5).reverse().map((gift, i) => (
-                      <div key={gift.id}
-                        className="adm-row grid px-5 py-3 items-center transition-colors"
-                        style={{ gridTemplateColumns: '1fr 80px 80px', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-6 w-6 rounded-lg flex-shrink-0 flex items-center justify-center"
-                            style={{ background: 'rgba(74,122,181,0.2)' }}>
-                            <Gift size={11} style={{ color: '#7AAFD4' }} />
+                    <div className="overflow-x-auto">
+                      <div style={{ minWidth: 300 }}>
+                        <div className="grid px-5 py-2 text-[9px] font-bold uppercase tracking-widest"
+                          style={{ gridTemplateColumns: '1fr 80px 80px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.05)' }}>
+                          <span>Presente</span><span className="text-right">Preço</span><span className="text-center">Status</span>
+                        </div>
+                        {gifts.slice(-5).reverse().map((gift, i) => (
+                          <div key={gift.id}
+                            className="adm-row grid px-5 py-3 items-center transition-colors"
+                            style={{ gridTemplateColumns: '1fr 80px 80px', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="h-6 w-6 rounded-lg flex-shrink-0 flex items-center justify-center"
+                                style={{ background: 'rgba(74,122,181,0.2)' }}>
+                                <Gift size={11} style={{ color: '#7AAFD4' }} />
+                              </div>
+                              <span className="truncate text-xs font-medium" style={{ color: 'rgba(200,220,240,0.85)' }}>
+                                {gift.name}
+                              </span>
+                            </div>
+                            <span className="text-right text-xs font-bold" style={{ color: '#C8DCF0' }}>
+                              R${gift.price?.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                            </span>
+                            <div className="flex justify-center">
+                              <span className="rounded-full px-2 py-0.5 text-[8px] font-bold"
+                                style={gift.status === 'available'
+                                  ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
+                                  : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
+                                {gift.status === 'available' ? '● Live' : '● Taken'}
+                              </span>
+                            </div>
                           </div>
-                          <span className="truncate text-xs font-medium" style={{ color: 'rgba(200,220,240,0.85)' }}>
-                            {gift.name}
-                          </span>
-                        </div>
-                        <span className="text-right text-xs font-bold" style={{ color: '#C8DCF0' }}>
-                          R${gift.price?.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                        </span>
-                        <div className="flex justify-center">
-                          <span className="rounded-full px-2 py-0.5 text-[8px] font-bold"
-                            style={gift.status === 'available'
-                              ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
-                              : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
-                            {gift.status === 'available' ? '● Live' : '● Taken'}
-                          </span>
-                        </div>
+                        ))}
+                        {gifts.length === 0 && (
+                          <p className="py-8 text-center text-xs" style={{ color: 'rgba(200,220,240,0.25)' }}>
+                            Nenhum presente cadastrado ainda
+                          </p>
+                        )}
                       </div>
-                    ))}
-                    {gifts.length === 0 && (
-                      <p className="py-8 text-center text-xs" style={{ color: 'rgba(200,220,240,0.25)' }}>
-                        Nenhum presente cadastrado ainda
-                      </p>
-                    )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -895,6 +900,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
                   <div className="rounded-2xl overflow-hidden"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                    <div className="overflow-x-auto">
+                    <div style={{ minWidth: 520 }}>
                     <div className="grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
                       style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
                       <span>Nome</span><span>E-mail</span><span className="text-center">Acomp.</span>
@@ -956,6 +963,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                           </div>
                         </div>
                       ))}
+                    </div>
+                    </div>
                     </div>
                   </div>
                 </div>
@@ -1023,6 +1032,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   {/* Tabela */}
                   <div className="rounded-2xl overflow-hidden"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
+                    <div className="overflow-x-auto">
+                    <div style={{ minWidth: 380 }}>
                     <div className="grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
                       style={{ gridTemplateColumns: '1fr 80px 80px 100px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
                       <span>Presente</span><span className="text-right">Preço</span>
@@ -1078,6 +1089,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                         </div>
                       )}
                     </div>
+                    </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1105,6 +1118,30 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 </div>
               )}
 
+            </div>
+
+            {/* ── Mobile bottom nav (visible only on small screens) ── */}
+            <div className="flex md:hidden flex-shrink-0"
+              style={{ background: '#060e22', borderTop: '1px solid rgba(200,220,240,0.08)' }}>
+              {NAV.map(item => (
+                <button key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className="adm-mob-tab flex flex-1 flex-col items-center gap-0.5 py-2.5 px-1 transition-colors relative"
+                  style={{
+                    color: activeTab === item.id ? '#4A7AB5' : 'rgba(200,220,240,0.35)',
+                    background: activeTab === item.id ? 'rgba(74,122,181,0.1)' : 'transparent',
+                    fontFamily: 'Poppins, sans-serif',
+                  }}>
+                  {item.icon}
+                  <span className="text-[8px] font-semibold leading-none">{item.label}</span>
+                  {item.badge && (
+                    <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[7px] font-black text-white"
+                      style={{ background: '#dc2626' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
