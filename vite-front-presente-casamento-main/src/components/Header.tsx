@@ -1,6 +1,7 @@
 import { Heart, Menu, X, Clock, MapPin, GlassWater, Music, LogIn, CheckCircle, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import LoginModal from "./LoginModal";
+import { useNavigate } from "react-router-dom";
 
 type HeaderProps = {
   coupleNames?: string;
@@ -15,6 +16,7 @@ type TimeLeft = {
   segundos: number;
 };
 
+
 export default function Header({
   coupleNames = "Luis & Natiele",
   weddingDate = "25 de Julho de 2026",
@@ -25,16 +27,17 @@ export default function Header({
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [confirmState, setConfirmState] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [confirmState, setConfirmState] = useState<'idle' | 'loading'>('idle');
+  const navigate = useNavigate();
 
   // ✅ Dispara o overlay — chamado pelo botão da navbar E pelo botão dentro do modal de acesso
   function handleConfirmarPresenca() {
     setIsAccessModalOpen(false);
     setConfirmState('loading');
-    setTimeout(() => setConfirmState('success'), 2500);
+    setTimeout(() => setConfirmState('loading'), 2500);
     setTimeout(() => {
       setConfirmState('idle');
-      // TODO: redirecionar para o formulário
+      navigate('/rsvp')
     }, 4000);
   }
 
@@ -126,83 +129,47 @@ export default function Header({
         </span>
       </button>
 
-      {/* ============================================================
-          OVERLAY DE CONFIRMAÇÃO — cobre a tela toda
-      ============================================================ */}
-      {(confirmState === 'loading' || confirmState === 'success') && (
-        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#1B3A6B]/80 backdrop-blur-md">
-          <div className={`flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white shadow-2xl w-[280px] transition-all duration-500 ${confirmState === 'success' ? 'scale-105' : 'scale-100'}`}>
+      {confirmState === 'loading' && (
+  <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#1B3A6B]/80 backdrop-blur-md">
+    <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white shadow-2xl w-[280px] transition-all duration-500">
 
-            {/* ESTADO: CARREGANDO */}
-            {confirmState === 'loading' && (
-              <>
-                <div className="relative w-24 h-24 flex items-center justify-center">
-                    <style>{`
-                      @keyframes spin-reverse {
-                        from { transform: rotate(360deg); }
-                        to   { transform: rotate(0deg); }
-                      }
-                      @keyframes progress-fill {
-                        from { width: 0%; }
-                        to   { width: 100%; }
-                      }
-                    `}</style>
-                  {/* Coração no centro */}
-                  <img src="https://cdn-icons-png.flaticon.com/512/8296/8296621.png" alt="" />
-                </div>
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <style>{`
+          @keyframes progress-fill {
+            from { width: 0%; }
+            to   { width: 100%; }
+          }
+        `}</style>
 
-                <div className="text-center">
-                  <p className="text-[#1B3A6B] font-semibold text-xl leading-snug"
-                    style={{ fontFamily: "serif", letterSpacing: '0.05em' }}>
-                    Espera só um momento
-                  </p>
-                  <p className="text-[#4A7AB5] text-xs mt-1 animate-pulse">
-                    Preparando sua confirmação...
-                  </p>
-                </div>
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/8296/8296621.png"
+          alt=""
+        />
+      </div>
 
-                {/* Barra de progresso */}
-                <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#4A7AB5] to-[#1B3A6B] rounded-full"
-                    style={{ animation: 'progress-fill 2.5s ease-in-out forwards' }} />
-                </div>
-              </>
-            )}
+      <div className="text-center">
+        <p
+          className="text-[#1B3A6B] font-semibold text-xl leading-snug"
+          style={{ fontFamily: "serif", letterSpacing: '0.05em' }}
+        >
+          Só um instante
+        </p>
 
-            {/* ESTADO: SUCESSO */}
-            {confirmState === 'success' && (
-              <>
-                <div className="relative w-24 h-24 flex items-center justify-center">
-                  <span className="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-20 animate-ping" />
-                  <div className="w-24 h-24 rounded-full bg-green-50 border-4 border-green-400 flex items-center justify-center shadow-lg">
-                    <svg className="w-12 h-12 text-green-500" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth="2.5">
-                      <style>{`
-                        @keyframes draw-check {
-                          from { stroke-dashoffset: 40; opacity: 0; }
-                          to   { stroke-dashoffset: 0;  opacity: 1; }
-                        }
-                      `}</style>
-                      <polyline points="4,13 9,18 20,7" strokeLinecap="round" strokeLinejoin="round"
-                        style={{ strokeDasharray: 40, strokeDashoffset: 0, animation: 'draw-check 0.5s ease-out forwards' }} />
-                    </svg>
-                  </div>
-                </div>
+        <p className="text-[#4A7AB5] text-xs mt-1 animate-pulse">
+          Redirecionando...
+        </p>
+      </div>
 
-                <div className="text-center">
-                  <p className="text-green-600 font-bold text-2xl"
-                    style={{ fontFamily: "serif", letterSpacing: '0.05em' }}>
-                    Presença Confirmada!
-                  </p>
-                  <p className="text-slate-400 text-xs mt-1">Que alegria! Te esperamos lá!</p>
-                </div>
-              </>
-            )}
+      <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-[#4A7AB5] to-[#1B3A6B] rounded-full"
+          style={{ animation: 'progress-fill 1.5s ease-in-out forwards' }}
+        />
+      </div>
 
-          </div>
-        </div>
-      )}
-
+    </div>
+  </div>
+)}
       {/* ============================================================
           MODAL: CRONOGRAMA
       ============================================================ */}

@@ -441,12 +441,9 @@ export default function RSVP() {
           {/* Footer */}
           <footer className="mt-20 py-10 text-center" style={{ borderTop: '1px solid #C8DCF0' }}>
             <div className="mb-4 flex justify-center gap-6">
-              <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
-              <Heart className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)', fill: 'rgba(74,122,181,0.35)' }} />
-              <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
             </div>
             <p className="font-serif text-lg font-bold" style={{ color: '#1B3A6B' }}>{coupleNames}</p>
-            <p className="mt-1 text-sm" style={{ color: '#7AAFD4' }}>{weddingDate} · {cityLabel}</p>
+            <p className="mt-1 font-normal" style={{ color: '#7AAFD4' }}>{weddingDate} · {cityLabel}</p>
           </footer>
 
         </div>
