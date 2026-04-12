@@ -1,10 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService implements OnModuleInit {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter | null = null;
+  private readonly logger = new Logger(MailService.name);
 
   constructor(private configService: ConfigService) {}
 
@@ -15,17 +16,17 @@ export class MailService implements OnModuleInit {
     const pass = this.configService.get<string>('MAIL_PASSWORD');
 
     if (!host || !user || !pass) {
-      throw new Error('Configuração de e-mail inválida. Verifique variáveis de ambiente.');
+      this.logger.warn(
+        'Configuração de e-mail ausente (MAIL_HOST, MAIL_USER, MAIL_PASSWORD). Envios desativados.',
+      );
+      return;
     }
 
     this.transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465, // automático
-      auth: {
-        user,
-        pass,
-      },
+      secure: port === 465,
+      auth: { user, pass },
     });
   }
 
@@ -38,19 +39,24 @@ export class MailService implements OnModuleInit {
     subject: string;
     html: string;
   }) {
+    if (!this.transporter) {
+      this.logger.warn(`E-mail não enviado para ${to}: transporter não configurado.`);
+      return;
+    }
+
     const from =
       this.configService.get<string>('MAIL_FROM') ||
       this.configService.get<string>('MAIL_USER');
 
     try {
       await this.transporter.sendMail({
-        from: `"Lista de Presentes" <${from}>`,
+        from: `"Luís & Natiele" <${from}>`,
         to,
         subject,
         html,
       });
     } catch (error) {
-      console.error('Erro ao enviar e-mail:', error);
+      this.logger.error(`Falha ao enviar e-mail para ${to}:`, error);
       throw error;
     }
   }
