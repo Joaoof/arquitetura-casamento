@@ -16,7 +16,7 @@ type TimeLeft = {
 };
 
 export default function Header({
-  coupleNames = "Luís & Natiele",
+  coupleNames = "Luis & Natiele",
   weddingDate = "25 de Julho de 2026",
   weddingDateISO = "2026-07-25T18:00:00",
 }: HeaderProps) {

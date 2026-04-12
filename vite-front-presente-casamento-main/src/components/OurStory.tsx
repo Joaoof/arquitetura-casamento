@@ -296,7 +296,7 @@ function StoriesTimeline({
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ color: 'white', fontWeight: 700, fontSize: 13, lineHeight: 1.2, margin: 0 }}>
-                  Luís &amp; Natiele
+                  Luis &amp; Natiele
                 </p>
                 <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, margin: 0 }}>{event.date}</p>
               </div>
@@ -480,7 +480,7 @@ export default function OurStory() {
               <span className="text-blue-200/60">✦</span>
               celebrando o amor de
               <span className="rounded-full border border-white/30 bg-white/10 px-3 py-0.5 font-bold tracking-widest md:px-4">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </span>
               25 · 07 · 2026
               <span className="text-blue-200/60">✦</span>
@@ -504,7 +504,7 @@ export default function OurStory() {
               A nossa história
             </p>
             <h1 className="mb-4 font-serif text-[2.8rem] font-bold leading-tight text-white drop-shadow-2xl sm:text-4xl md:text-5xl">
-              Luís &amp; Natiele
+              Luis &amp; Natiele
             </h1>
             <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:gap-6">
               <span className="flex items-center gap-1.5 text-xs font-light tracking-widest text-white/80 md:text-sm">
@@ -542,7 +542,7 @@ export default function OurStory() {
               <div className="h-[1px] w-8 bg-[#C8DCF0] md:w-10" />
             </div>
             <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.3em] text-[#4A7AB5]">
-              Luís e Natiele
+              Luis e Natiele
             </p>
           </div>
         </section>
@@ -632,7 +632,7 @@ export default function OurStory() {
         <section className="relative flex h-screen w-full overflow-hidden dark:bg-slate-900">
           <div className="flex w-full flex-col md:flex-row">
             <div className="relative h-[40vh] w-full md:h-full md:w-1/2">
-              <img src="img9.JPG" alt="Luís e Natiele" className="h-full w-full object-cover object-top" />
+              <img src="img9.JPG" alt="Luis e Natiele" className="h-full w-full object-cover object-top" />
               <div className="absolute inset-0 hidden md:block"
                 style={{ background: 'linear-gradient(to right, transparent 55%, #1B3060 100%)' }} />
               <div className="absolute inset-0 md:hidden"
@@ -693,7 +693,7 @@ export default function OurStory() {
                 Até <span style={{ color: 'rgba(200,220,240,0.55)' }}>15 de junho de 2026</span>
               </p>
               <p className="mt-6 font-serif text-sm italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </p>
             </div>
           </div>

@@ -305,7 +305,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               </div>
               <div>
                 <p className="text-xs font-black text-white">Admin Panel</p>
-                <p className="text-[9px]" style={{ color: 'rgba(200,220,240,0.4)' }}>Luís &amp; Natiele</p>
+                <p className="text-[9px]" style={{ color: 'rgba(200,220,240,0.4)' }}>Luis &amp; Natiele</p>
               </div>
             </div>
 

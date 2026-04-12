@@ -6,7 +6,7 @@ type WelcomeBannerProps = {
 };
 
 const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
-    coupleNames = 'Luís & Natiele',
+    coupleNames = 'Luis & Natiele',
     coupleSlug = 'luis-natiele',
 }) => {
     const [step, setStep] = useState<0 | 1 | 2 | 'done'>(0);

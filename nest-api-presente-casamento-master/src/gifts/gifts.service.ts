@@ -310,7 +310,7 @@ export class GiftsService {
             : ``;
 
         // URL do WhatsApp pré-formatada. IMPORTANTE: Substitua '5500000000000' pelo número real.
-        const whatsappMsg = `Olá Luís e Vitória! Acabei de reservar o presente '${gift.name}' para o casamento de vocês!`;
+        const whatsappMsg = `Olá Luis e Vitória! Acabei de reservar o presente '${gift.name}' para o casamento de vocês!`;
         const whatsappUrl = `https://wa.me/5500000000000?text=${encodeURIComponent(whatsappMsg)}`;
 
         return `<!DOCTYPE html>
@@ -318,7 +318,7 @@ export class GiftsService {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Presente Reservado - Luís e Vitória</title>
+<title>Presente Reservado - Luis e Vitória</title>
 <style>
     body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F5F5DC; margin: 0; padding: 20px; color: #000000; }
     .container { max-width: 600px; margin: auto; background: #FFFFFF; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #D8B56A; }
@@ -342,7 +342,7 @@ export class GiftsService {
 <body>
 <div class="container">
     <div class="header">
-        <h1>Luís & Vitória</h1>
+        <h1>Luis & Vitória</h1>
     </div>
     <div class="status">Presente Reservado com Sucesso</div>
     <div class="content">
@@ -368,7 +368,7 @@ export class GiftsService {
     </div>
     <div class="footer">
         <p>Sua presença e generosidade tornam este momento ainda mais especial.</p>
-        <p>Com carinho,<br><strong>Luís e Vitória</strong></p>
+        <p>Com carinho,<br><strong>Luis e Vitória</strong></p>
     </div>
 </div>
 </body>

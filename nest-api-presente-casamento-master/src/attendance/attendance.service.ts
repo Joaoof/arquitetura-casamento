@@ -46,8 +46,8 @@ export class AttendanceService {
     companions: number;
   }) {
     const subject = attendance.isAttending
-      ? `Presença confirmada! 🎉 — Luís & Natiele`
-      : `Recebemos sua resposta — Luís & Natiele`;
+      ? `Presença confirmada! 🎉 — Luis & Natiele`
+      : `Recebemos sua resposta — Luis & Natiele`;
 
     const html = this.buildConfirmationEmailHtml(attendance);
 
@@ -70,7 +70,7 @@ export class AttendanceService {
     const photoBlock = photoUrl
       ? `<tr>
           <td style="padding:0;line-height:0;">
-            <img src="${photoUrl}" alt="Luís e Natiele" width="600"
+            <img src="${photoUrl}" alt="Luis e Natiele" width="600"
               style="display:block;width:100%;height:280px;object-fit:cover;object-position:top;" />
           </td>
         </tr>`
@@ -207,7 +207,7 @@ export class AttendanceService {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>${attendance.isAttending ? 'Presença Confirmada' : 'Resposta Recebida'} — Luís &amp; Natiele</title>
+  <title>${attendance.isAttending ? 'Presença Confirmada' : 'Resposta Recebida'} — Luis &amp; Natiele</title>
 </head>
 <body style="margin:0;padding:0;background:#eef4fb;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
@@ -228,7 +228,7 @@ export class AttendanceService {
               </p>
               <h1 style="margin:0 0 10px;font-size:38px;font-weight:300;letter-spacing:0.06em;
                           color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </h1>
               <div style="display:inline-block;background:rgba(255,255,255,0.12);
                            border:1px solid rgba(200,220,240,0.25);border-radius:100px;
@@ -285,7 +285,7 @@ export class AttendanceService {
               </p>
               <h3 style="margin:0 0 10px;font-size:24px;font-weight:300;color:#ffffff;
                           font-family:Georgia,'Times New Roman',serif;letter-spacing:0.06em;">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </h3>
               <p style="margin:0;font-size:12px;color:rgba(200,220,240,0.5);letter-spacing:0.08em;">
                 25 de Julho de 2026 &nbsp;·&nbsp; Araguaína, TO
@@ -297,7 +297,7 @@ export class AttendanceService {
 
         <!-- Sub-rodapé fora do card -->
         <p style="margin:20px 0 0;font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;">
-          Você recebeu este e-mail porque confirmou (ou respondeu) o convite de Luís &amp; Natiele.<br>
+          Você recebeu este e-mail porque confirmou (ou respondeu) o convite de Luis &amp; Natiele.<br>
           Caso tenha recebido por engano, ignore esta mensagem.
         </p>
 
@@ -349,7 +349,7 @@ export class AttendanceService {
     const photoBlock = photoUrl
       ? `<tr>
           <td style="padding:0;line-height:0;">
-            <img src="${photoUrl}" alt="Luís e Natiele" width="600"
+            <img src="${photoUrl}" alt="Luis e Natiele" width="600"
               style="display:block;width:100%;height:240px;object-fit:cover;object-position:top;" />
           </td>
         </tr>`
@@ -363,7 +363,7 @@ export class AttendanceService {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Luís &amp; Natiele</title>
+  <title>Luis &amp; Natiele</title>
 </head>
 <body style="margin:0;padding:0;background:#eef4fb;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
@@ -384,7 +384,7 @@ export class AttendanceService {
               </p>
               <h1 style="margin:0 0 10px;font-size:38px;font-weight:300;letter-spacing:0.06em;
                           color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </h1>
               <div style="display:inline-block;background:rgba(255,255,255,0.12);
                            border:1px solid rgba(200,220,240,0.25);border-radius:100px;padding:6px 20px;margin-top:4px;">
@@ -441,7 +441,7 @@ export class AttendanceService {
                           text-transform:uppercase;color:rgba(200,220,240,0.6);">com amor,</p>
               <h3 style="margin:0 0 10px;font-size:24px;font-weight:300;color:#ffffff;
                           font-family:Georgia,'Times New Roman',serif;letter-spacing:0.06em;">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </h3>
               <p style="margin:0;font-size:12px;color:rgba(200,220,240,0.5);letter-spacing:0.08em;">
                 25 de Julho de 2026 &nbsp;·&nbsp; Araguaína, TO
@@ -452,7 +452,7 @@ export class AttendanceService {
         </table>
 
         <p style="margin:20px 0 0;font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;">
-          Você recebeu este e-mail por estar na lista de convidados de Luís &amp; Natiele.<br>
+          Você recebeu este e-mail por estar na lista de convidados de Luis &amp; Natiele.<br>
           Caso tenha recebido por engano, ignore esta mensagem.
         </p>
       </td>
