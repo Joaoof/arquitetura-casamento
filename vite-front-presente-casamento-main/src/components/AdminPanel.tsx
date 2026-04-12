@@ -17,6 +17,7 @@ interface AdminSidebarProps {
   onAddGift: (gift: Omit<GiftType, 'id' | 'createdAt' | 'status'>) => void;
   onUpdateGift: (id: string, gift: Partial<GiftType>) => void;
   onDeleteGift: (id: string) => void;
+  onDeleteAllGifts: () => Promise<void>;
   giftToEdit: GiftType | null;
   onCancelEdit: () => void;
 }
@@ -82,7 +83,7 @@ const MiniBarChart: React.FC<{ data: { label: string; value: number; color: stri
 
 // ── Main Component ──────────────────────────────────────────
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  gifts = [], onAddGift, onUpdateGift, onDeleteGift, giftToEdit, onCancelEdit,
+  gifts = [], onAddGift, onUpdateGift, onDeleteGift, onDeleteAllGifts, giftToEdit, onCancelEdit,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('dashboard')
@@ -103,6 +104,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [bulkMessage, setBulkMessage] = useState('')
   const [bulkFilter, setBulkFilter] = useState<'all' | 'confirmed' | 'declined'>('all')
   const [bulkStatus, setBulkStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [deletingAllGifts, setDeletingAllGifts] = useState(false)
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
   const [bulkResult, setBulkResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
   const [attendanceStats, setAttendanceStats] = useState({
     total: 0,
@@ -257,6 +260,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Excluir este presente?')) onDeleteGift(id)
+  }
+
+  const handleDeleteAll = async () => {
+    if (!deleteAllConfirm) {
+      setDeleteAllConfirm(true)
+      setTimeout(() => setDeleteAllConfirm(false), 4000)
+      return
+    }
+    setDeletingAllGifts(true)
+    setDeleteAllConfirm(false)
+    try {
+      await onDeleteAllGifts()
+    } catch {
+      alert('Erro ao excluir todos os presentes.')
+    } finally {
+      setDeletingAllGifts(false)
+    }
   }
 
   const handleDeleteAttendance = async (id: string) => {
@@ -972,6 +992,24 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white transition-all hover:-translate-y-0.5"
                       style={{ background: 'linear-gradient(135deg,#1B3A6B,#4A7AB5)', boxShadow: '0 4px 16px rgba(27,58,107,0.5)' }}>
                       <PlusCircle size={13} /> Novo
+                    </button>
+                    <button
+                      onClick={handleDeleteAll}
+                      disabled={deletingAllGifts || gifts.length === 0}
+                      className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        background: deleteAllConfirm
+                          ? 'linear-gradient(135deg,#7f1d1d,#dc2626)'
+                          : 'rgba(220,38,38,0.15)',
+                        color: deleteAllConfirm ? '#fff' : '#f87171',
+                        border: `1px solid ${deleteAllConfirm ? 'rgba(220,38,38,0.8)' : 'rgba(220,38,38,0.3)'}`,
+                        boxShadow: deleteAllConfirm ? '0 4px 16px rgba(220,38,38,0.4)' : 'none',
+                      }}>
+                      {deletingAllGifts
+                        ? <><Loader2 size={13} className="animate-spin" /> Apagando...</>
+                        : deleteAllConfirm
+                          ? <><AlertCircle size={13} /> Confirmar?</>
+                          : <><Trash2 size={13} /> Limpar Todos</>}
                     </button>
                   </div>
 

@@ -195,6 +195,20 @@ export const api = {
     }
   },
 
+  async deleteAllGifts(): Promise<{ count: number }> {
+    const response = await fetch(`${API_URL}/gifts/admin/all`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Falha ao excluir todos os presentes');
+    }
+    return response.json();
+  },
+
   async deleteGift(id: string, coupleSlug?: string) {
     try {
       const response = await fetch(withCoupleSlug(`/gifts/${id}`, coupleSlug), {
