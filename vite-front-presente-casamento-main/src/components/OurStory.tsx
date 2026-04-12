@@ -10,14 +10,14 @@ import { useState, useRef, useEffect } from 'react'
 const TIMELINE_EVENTS = [
   {
     date: "Março, 2025",
-    title: "Primeiro namoro",
-    text: "O começo de tudo. Uma rosa, um momento, e uma história que mudaria nossas vidas.",
+    title: "Pedido de namoro",
+    text: "O começo de tudo. Uma rosa, um momento, e uma história que mudaria nossas vidas. Ajoelhado diante dela, com um buquê e um anel. Ela disse sim",
     img: "/pedido-namoro.jpeg",
   },
   {
     date: "Julho, 2025",
     title: "Primeiro mês juntos",
-    text: "Um mês depois, já sabíamos que era pra durar. Cada dia melhor que o anterior.",
+    text: "Uma mesa simples, dois pratos e muito amor. Esse jantar ficou na memória",
     img: "/juntos.jpeg",
   },
   {
@@ -29,13 +29,13 @@ const TIMELINE_EVENTS = [
   {
     date: "14 Jun",
     title: "Primeiro piquenique",
-    text: "Uma mesa simples, dois pratos e muito amor. Esse jantar ficou na memória.",
+    text: "Nosso primeiro piquenique. Um momento de lazer e diversão",
     img: "/pequinique.jpeg",
   },
   {
     date: "31 Jan",
     title: "Curso de noivos",
-    text: "Ajoelhado diante dela, com um buquê e um anel. Ela disse sim.",
+    text: "Aprendendo a ser noivos, e como glorificar a Deus juntos",
     img: "/curso-noivado.jpeg",
   },
 ]
@@ -533,7 +533,7 @@ export default function OurStory() {
           <div className="flex max-w-xl flex-col items-center text-center">
             <span className="mb-2 select-none font-serif text-6xl leading-none text-[#C8DCF0] dark:text-[#1B3A6B]/60 md:text-7xl">"</span>
             <p className="font-serif text-lg leading-[1.9] text-slate-600 dark:text-slate-400 md:text-2xl">
-              Foi nos detalhes mais simples que construímos o nosso maior amor.
+              Foi nos detalhes mais simples que construímos o nosso amor.
               Cada pequena escolha nos guiou até o altar.
             </p>
             <div className="mt-8 flex items-center gap-4">
