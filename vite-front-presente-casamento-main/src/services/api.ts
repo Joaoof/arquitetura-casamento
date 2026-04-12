@@ -55,6 +55,34 @@ export const api = {
     return response.json();
   },
 
+  async deleteAttendance(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/attendance/admin/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
+    });
+    if (!response.ok) throw new Error('Falha ao remover confirmação de presença');
+  },
+
+  async sendBulkEmail(data: {
+    subject: string;
+    message: string;
+    filter: 'all' | 'confirmed' | 'declined';
+  }): Promise<{ sent: number; failed: number; total: number }> {
+    const response = await fetch(`${API_URL}/attendance/admin/bulk-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Falha ao enviar e-mails');
+    }
+    return response.json();
+  },
+
   async getAttendanceAdmin(params?: {
     page?: number;
     limit?: number;
