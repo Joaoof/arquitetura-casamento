@@ -16,7 +16,6 @@ type TimeLeft = {
   segundos: number;
 };
 
-
 export default function Header({
   coupleNames = "Luis & Natiele",
   weddingDate = "25 de Julho de 2026",
@@ -112,7 +111,15 @@ export default function Header({
 
   return (
     <div className="min-h-screen bg-[#4A7AB5] text-slate-800 flex flex-col">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');
+        
+        /* ✅ Adicionado animação para o brilho do botão */
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
 
       {/* ============================================================
           BOTÃO FLUTUANTE — Área do Casal
@@ -130,46 +137,47 @@ export default function Header({
       </button>
 
       {confirmState === 'loading' && (
-  <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#1B3A6B]/80 backdrop-blur-md">
-    <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white shadow-2xl w-[280px] transition-all duration-500">
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#1B3A6B]/80 backdrop-blur-md">
+          <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white shadow-2xl w-[280px] transition-all duration-500">
 
-      <div className="relative w-24 h-24 flex items-center justify-center">
-        <style>{`
-          @keyframes progress-fill {
-            from { width: 0%; }
-            to   { width: 100%; }
-          }
-        `}</style>
+            <div className="relative w-24 h-24 flex items-center justify-center">
+              <style>{`
+                @keyframes progress-fill {
+                  from { width: 0%; }
+                  to   { width: 100%; }
+                }
+              `}</style>
 
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/8296/8296621.png"
-          alt=""
-        />
-      </div>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/8296/8296621.png"
+                alt=""
+              />
+            </div>
 
-      <div className="text-center">
-        <p
-          className="text-[#1B3A6B] font-semibold text-xl leading-snug"
-          style={{ fontFamily: "serif", letterSpacing: '0.05em' }}
-        >
-          Só um instante
-        </p>
+            <div className="text-center">
+              <p
+                className="text-[#1B3A6B] font-semibold text-xl leading-snug"
+                style={{ fontFamily: "serif", letterSpacing: '0.05em' }}
+              >
+                Só um instante
+              </p>
 
-        <p className="text-[#4A7AB5] text-xs mt-1 animate-pulse">
-          Redirecionando...
-        </p>
-      </div>
+              <p className="text-[#4A7AB5] text-xs mt-1 animate-pulse">
+                Redirecionando...
+              </p>
+            </div>
 
-      <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-[#4A7AB5] to-[#1B3A6B] rounded-full"
-          style={{ animation: 'progress-fill 1.5s ease-in-out forwards' }}
-        />
-      </div>
+            <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#4A7AB5] to-[#1B3A6B] rounded-full"
+                style={{ animation: 'progress-fill 1.5s ease-in-out forwards' }}
+              />
+            </div>
 
-    </div>
-  </div>
-)}
+          </div>
+        </div>
+      )}
+
       {/* ============================================================
           MODAL: CRONOGRAMA
       ============================================================ */}
@@ -341,16 +349,38 @@ export default function Header({
               <h1 className="text-3xl md:text-6xl font-serif mb-6 drop-shadow-lg text-white">
                 {coupleNames}
               </h1>
-              <p className="text-xs md:text-xl text-white mb-8 drop-shadow-lg font-medium tracking-wide">
+              <p className="text-xs md:text-xl text-white mb-10 drop-shadow-lg font-medium tracking-wide">
                 {weddingDate}
               </p>
-              <button
-                onClick={() => setIsScheduleModalOpen(true)}
-                className="bg-[#1B3A6B] backdrop-blur-sm border border-white/40 text-white px-8 py-4 md:py-3 rounded-full text-sm hover:bg-[#14305a] transition shadow-lg w-full max-w-xs md:w-auto flex items-center justify-center gap-2 mx-auto"
-              >
-                <Clock className="w-4 h-4" />
-                Ver cronograma do casamento
-              </button>
+              
+              {/* ✅ CONTAINER DE BOTÕES ATUALIZADO */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                
+                {/* NOVO BOTÃO: Confirmar Presença (Brilhante e Animado) */}
+                <button
+                  onClick={handleConfirmarPresenca}
+                  className="group relative overflow-hidden flex items-center justify-center gap-2 px-8 py-4 md:py-3 rounded-full font-bold text-white text-sm uppercase tracking-widest transition-all duration-300 hover:scale-105 w-full max-w-xs sm:w-auto"
+                  style={{ 
+                    background: 'bg-["#1B3A6B"]',
+                    boxShadow: '0 0 20px rgba(244,167,185,0.5)' 
+                  }}
+                >
+                  {/* Efeito de brilho varrendo */}
+                  <div className="absolute inset-0 -translate-x-full to-transparent animate-[shimmer_2s_infinite_linear]" />
+                  <CheckCircle className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10">Confirmar Presença</span>
+                </button>
+
+                {/* BOTÃO ORIGINAL: Ver cronograma (Intocado) */}
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="bg-[#1B3A6B] backdrop-blur-sm border border-white/40 text-white px-8 py-4 md:py-3 rounded-full text-sm hover:bg-[#14305a] transition shadow-lg w-full max-w-xs sm:w-auto flex items-center justify-center gap-2"
+                >
+                  <Clock className="w-4 h-4" />
+                  Ver cronograma do casamento
+                </button>
+
+              </div>
             </div>
           </div>
         </section>

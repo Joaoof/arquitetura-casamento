@@ -662,11 +662,11 @@ export default function OurStory() {
                   <circle cx="5" cy="252" r="3" fill="rgba(200,220,240,0.25)" />
                 </svg>
               </div>
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em]"
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] font-display"
                 style={{ color: 'rgba(200,220,240,0.45)' }}>
                 25 · 07 · 2026 &nbsp;·&nbsp; Araguaína, TO
               </p>
-              <h2 className="mb-4 font-serif text-2xl font-bold text-white md:text-4xl lg:text-5xl">
+              <h2 className="mb-4 font-display text-2xl font-bold text-white md:text-4xl lg:text-5xl">
                 Falta só <span style={{ color: '#F4A7B9' }}>o seu nome.</span>
               </h2>
               <p className="mb-6 max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -682,7 +682,7 @@ export default function OurStory() {
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round">
                     <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" />
                   </svg>
-                  <span className="rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em]"
+                  <span className="rounded-full px-5 py-2 text-xs font-sans uppercase tracking-[0.2em]"
                     style={{ background: '#F4A7B9', color: '#1B3060' }}>
                     Confirmar presença
                   </span>
@@ -692,7 +692,7 @@ export default function OurStory() {
               <p className="text-[11px]" style={{ color: 'rgba(200,220,240,0.3)' }}>
                 Até <span style={{ color: 'rgba(200,220,240,0.55)' }}>15 de junho de 2026</span>
               </p>
-              <p className="mt-6 font-serif text-sm italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              <p className="mt-6 font-serif text-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>
                 Luis &amp; Natiele
               </p>
             </div>
