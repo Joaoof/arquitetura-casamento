@@ -4,21 +4,21 @@ import { ChevronLeft, ChevronRight, Heart, Images } from 'lucide-react'
 import PhotoGallery from './PhotoGallery'
 
 const photos = [
-  { url: '/img3.webp', caption: 'O começo de tudo' },
-  { url: '/img4.webp', caption: 'Cada detalhe importa' },
-  { url: '/img5.webp', caption: 'Momentos eternos' },
-  { url: '/img6.webp', caption: 'Nossa história' },
-  { url: '/img7.webp', caption: 'Sempre juntos' },
-  { url: '/img8.webp', caption: 'Amor verdadeiro' },
-  { url: '/img9.webp', caption: 'Para sempre' },
-  { url: '/img10.webp', caption: 'Eternamente' },
-  { url: '/img11.webp', caption: 'Eternamente' },
-  { url: '/img12.webp', caption: 'Eternamente' },
-  { url: '/img13.webp', caption: 'Eternamente' },
-  { url: '/img14.webp', caption: 'Eternamente' },
-  { url: '/img15.webp', caption: 'Eternamente' },
-  { url: '/img16.webp', caption: 'Eternamente' },
+  { url: '/img3.webp',  caption: 'O começo de tudo'     },
+  { url: '/img4.webp',  caption: 'Cada detalhe importa' },
+  { url: '/img5.webp',  caption: 'Momentos eternos'     },
+  { url: '/img6.webp',  caption: 'Nossa história'        },
+  { url: '/img7.webp',  caption: 'Sempre juntos'         },
+  { url: '/img8.webp',  caption: 'Amor verdadeiro'       },
+  { url: '/img9.webp',  caption: 'Para sempre'           },
+  { url: '/img10.JPG', caption: 'O Amor prevaleçera sempre'           },
+  { url: '/img12.webp', caption: 'Com Deus no centro'           },
+  { url: '/img13.webp', caption: 'Cristo a nosso redor'           },
+  { url: '/img14.webp', caption: 'Ainda mais perto de você'           },
+  { url: '/img15.webp', caption: 'Minha para sempre'           },
+  { url: '/img16.webp', caption: 'Até que Cristo venha'           },
 ].filter(p => p.url)
+
 
 export default function PhotoCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 35, align: 'center' })

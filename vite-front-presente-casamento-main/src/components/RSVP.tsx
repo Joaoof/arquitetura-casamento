@@ -58,18 +58,19 @@ function SuccessScreen({
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f0f6ff' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#f0f6ff', fontFamily: "'Poppins', sans-serif" }}>
 
-      {/* Marquee */}
+      {/* Marquee & Fonte Poppins */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700&display=swap');
         @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .rsvp-marquee { display: flex; width: max-content; animation: marquee 28s linear infinite; }
         @keyframes successPop {
           0%   { transform: scale(0.7); opacity: 0; }
-          70%  { transform: scale(1.1); }
+          70%  { transform: scale(1.05); }
           100% { transform: scale(1);   opacity: 1; }
         }
-        .success-pop { animation: successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .success-pop { animation: successPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
       `}</style>
 
       <div className="sticky top-0 z-50 w-full overflow-hidden py-2 shadow-md"
@@ -92,16 +93,20 @@ function SuccessScreen({
       <div className="flex flex-1 items-center justify-center px-4 py-16">
         <div className="text-center max-w-md w-full">
 
-          {/* Ícone animado */}
-          <div className="success-pop mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full"
-            style={{ background: 'linear-gradient(135deg, #1B3A6B, #4A7AB5)', boxShadow: '0 8px 32px rgba(27,58,107,0.35)' }}>
-            <Heart className="w-11 h-11" style={{ color: 'white', fill: 'white' }} />
+          {/* Imagem animada no lugar do ícone */}
+          <div className="success-pop mx-auto mb-6 h-32 w-32 overflow-hidden rounded-full shadow-xl"
+            style={{ border: '4px solid white' }}>
+            <img 
+              src="/img9.JPG" 
+              alt="Casal" 
+              className="h-full w-full object-cover"
+            />
           </div>
 
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.3em]" style={{ color: '#7AAFD4' }}>
             confirmação recebida
           </p>
-          <h2 className="font-serif text-3xl font-bold mb-3" style={{ color: '#1B3A6B' }}>
+          <h2 className="text-3xl font-bold mb-3" style={{ color: '#1B3A6B' }}>
             Obrigado, {name}!
           </h2>
           <p className="text-slate-500 leading-relaxed mb-2">
@@ -110,17 +115,15 @@ function SuccessScreen({
               : "Sentiremos sua falta, mas agradecemos imensamente pela resposta."}
           </p>
 
-          <div className="my-6 flex items-center gap-4 justify-center">
-            <div className="h-[1px] w-10" style={{ background: '#C8DCF0' }} />
-            <Heart className="w-3.5 h-3.5" style={{ color: '#4A7AB5', fill: '#4A7AB5' }} />
-            <div className="h-[1px] w-10" style={{ background: '#C8DCF0' }} />
+          <div className="my-6 flex items-center justify-center">
+            <div className="h-[1px] w-20" style={{ background: '#C8DCF0' }} />
           </div>
 
-          <p className="font-serif text-sm italic mb-8" style={{ color: '#7AAFD4' }}>
+          <p className="text-sm mb-8 font-medium" style={{ color: '#7AAFD4' }}>
             {weddingDate} · {cityLabel}
           </p>
 
-          {/* Botões de ação */}
+          {/* Botões de ação sem ícones */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={() => navigate(coupleHomePath)}
@@ -130,11 +133,9 @@ function SuccessScreen({
                 boxShadow: '0 4px 20px rgba(27,58,107,0.3)',
               }}
             >
-              <Home className="w-4 h-4" />
               Voltar ao início
             </button>
 
-            {/* Botão "Editar resposta" — volta ao form preenchido */}
             <button
               onClick={onBack}
               className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold transition-all hover:-translate-y-0.5"
@@ -144,21 +145,15 @@ function SuccessScreen({
                 background: 'white',
               }}
             >
-              <ArrowLeft className="w-4 h-4" />
               Editar resposta
             </button>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer sem ícones */}
       <footer className="py-8 text-center" style={{ borderTop: '1px solid #C8DCF0' }}>
-        <div className="mb-3 flex justify-center gap-5">
-          <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
-          <Heart className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)', fill: 'rgba(74,122,181,0.35)' }} />
-          <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
-        </div>
-        <p className="font-serif text-base font-bold" style={{ color: '#1B3A6B' }}>{coupleNames}</p>
+        <p className="text-base font-bold" style={{ color: '#1B3A6B' }}>{coupleNames}</p>
         <p className="mt-1 text-xs" style={{ color: '#7AAFD4' }}>{weddingDate} · {cityLabel}</p>
       </footer>
     </div>
@@ -293,7 +288,7 @@ export default function RSVP() {
           {/* HERO BANNER */}
           <div className="mb-8 min-h-[300px] overflow-hidden rounded-2xl flex flex-col justify-end relative"
             style={{ boxShadow: '0 8px 40px rgba(27,58,107,0.18)' }}>
-            <img src="/img9.JPG" alt="Luís e Natiele"
+            <img src="/img9.JPG" alt="Luis e Natiele"
               className="absolute inset-0 w-full h-full object-cover object-top" />
             <div className="absolute inset-0"
               style={{ background: 'linear-gradient(to top, rgba(27,48,96,0.92) 0%, rgba(27,48,96,0.2) 60%)' }} />
@@ -408,7 +403,7 @@ export default function RSVP() {
                 </label>
                 <textarea id="message" name="message" rows={4}
                   value={form.message} onChange={handleChange}
-                  placeholder="Uma mensagem especial para Luís e Natiele..."
+                  placeholder="Uma mensagem especial para Luis e Natiele..."
                   className={TEXTAREA_CLASS} />
               </div>
 
@@ -446,12 +441,9 @@ export default function RSVP() {
           {/* Footer */}
           <footer className="mt-20 py-10 text-center" style={{ borderTop: '1px solid #C8DCF0' }}>
             <div className="mb-4 flex justify-center gap-6">
-              <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
-              <Heart className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)', fill: 'rgba(74,122,181,0.35)' }} />
-              <Sparkles className="w-4 h-4" style={{ color: 'rgba(74,122,181,0.35)' }} />
             </div>
             <p className="font-serif text-lg font-bold" style={{ color: '#1B3A6B' }}>{coupleNames}</p>
-            <p className="mt-1 text-sm" style={{ color: '#7AAFD4' }}>{weddingDate} · {cityLabel}</p>
+            <p className="mt-1 font-normal" style={{ color: '#7AAFD4' }}>{weddingDate} · {cityLabel}</p>
           </footer>
 
         </div>

@@ -81,7 +81,7 @@ export class MailService implements OnModuleInit {
 
     try {
       await this.transporter.sendMail({
-        from: `"Luís & Natiele" <${fromAddress}>`,
+        from: `"Luis & Natiele" <${from}>`,
         to,
         subject,
         html,

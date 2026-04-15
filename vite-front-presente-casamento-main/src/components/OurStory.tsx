@@ -10,14 +10,14 @@ import { useState, useRef, useEffect } from 'react'
 const TIMELINE_EVENTS = [
   {
     date: "Março, 2025",
-    title: "Primeiro namoro",
-    text: "O começo de tudo. Uma rosa, um momento, e uma história que mudaria nossas vidas.",
+    title: "Pedido de namoro",
+    text: "O começo de tudo. Uma rosa, um momento, e uma história que mudaria nossas vidas. Ajoelhado diante dela, com um buquê e um anel. Ela disse sim",
     img: "/pedido-namoro.jpeg",
   },
   {
     date: "Julho, 2025",
     title: "Primeiro mês juntos",
-    text: "Um mês depois, já sabíamos que era pra durar. Cada dia melhor que o anterior.",
+    text: "Uma mesa simples, dois pratos e muito amor. Esse jantar ficou na memória",
     img: "/juntos.jpeg",
   },
   {
@@ -29,13 +29,13 @@ const TIMELINE_EVENTS = [
   {
     date: "14 Jun",
     title: "Primeiro piquenique",
-    text: "Uma mesa simples, dois pratos e muito amor. Esse jantar ficou na memória.",
+    text: "Nosso primeiro piquenique. Um momento de lazer e diversão",
     img: "/pequinique.jpeg",
   },
   {
     date: "31 Jan",
     title: "Curso de noivos",
-    text: "Ajoelhado diante dela, com um buquê e um anel. Ela disse sim.",
+    text: "Aprendendo a ser noivos, e como glorificar a Deus juntos",
     img: "/curso-noivado.jpeg",
   },
 ]
@@ -296,7 +296,7 @@ function StoriesTimeline({
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ color: 'white', fontWeight: 700, fontSize: 13, lineHeight: 1.2, margin: 0 }}>
-                  Luís &amp; Natiele
+                  Luis &amp; Natiele
                 </p>
                 <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, margin: 0 }}>{event.date}</p>
               </div>
@@ -480,7 +480,7 @@ export default function OurStory() {
               <span className="text-blue-200/60">✦</span>
               celebrando o amor de
               <span className="rounded-full border border-white/30 bg-white/10 px-3 py-0.5 font-bold tracking-widest md:px-4">
-                Luís &amp; Natiele
+                Luis &amp; Natiele
               </span>
               25 · 07 · 2026
               <span className="text-blue-200/60">✦</span>
@@ -504,7 +504,7 @@ export default function OurStory() {
               A nossa história
             </p>
             <h1 className="mb-4 font-serif text-[2.8rem] font-bold leading-tight text-white drop-shadow-2xl sm:text-4xl md:text-5xl">
-              Luís &amp; Natiele
+              Luis &amp; Natiele
             </h1>
             <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:gap-6">
               <span className="flex items-center gap-1.5 text-xs font-light tracking-widest text-white/80 md:text-sm">
@@ -533,7 +533,7 @@ export default function OurStory() {
           <div className="flex max-w-xl flex-col items-center text-center">
             <span className="mb-2 select-none font-serif text-6xl leading-none text-[#C8DCF0] dark:text-[#1B3A6B]/60 md:text-7xl">"</span>
             <p className="font-serif text-lg leading-[1.9] text-slate-600 dark:text-slate-400 md:text-2xl">
-              Foi nos detalhes mais simples que construímos o nosso maior amor.
+              Foi nos detalhes mais simples que construímos o nosso amor.
               Cada pequena escolha nos guiou até o altar.
             </p>
             <div className="mt-8 flex items-center gap-4">
@@ -542,7 +542,7 @@ export default function OurStory() {
               <div className="h-[1px] w-8 bg-[#C8DCF0] md:w-10" />
             </div>
             <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.3em] text-[#4A7AB5]">
-              Luís e Natiele
+              Luis e Natiele
             </p>
           </div>
         </section>
@@ -632,7 +632,7 @@ export default function OurStory() {
         <section className="relative flex h-screen w-full overflow-hidden dark:bg-slate-900">
           <div className="flex w-full flex-col md:flex-row">
             <div className="relative h-[40vh] w-full md:h-full md:w-1/2">
-              <img src="img9.JPG" alt="Luís e Natiele" className="h-full w-full object-cover object-top" />
+              <img src="img9.JPG" alt="Luis e Natiele" className="h-full w-full object-cover object-top" />
               <div className="absolute inset-0 hidden md:block"
                 style={{ background: 'linear-gradient(to right, transparent 55%, #1B3060 100%)' }} />
               <div className="absolute inset-0 md:hidden"
@@ -662,11 +662,11 @@ export default function OurStory() {
                   <circle cx="5" cy="252" r="3" fill="rgba(200,220,240,0.25)" />
                 </svg>
               </div>
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em]"
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] font-display"
                 style={{ color: 'rgba(200,220,240,0.45)' }}>
                 25 · 07 · 2026 &nbsp;·&nbsp; Araguaína, TO
               </p>
-              <h2 className="mb-4 font-serif text-2xl font-bold text-white md:text-4xl lg:text-5xl">
+              <h2 className="mb-4 font-display text-2xl font-bold text-white md:text-4xl lg:text-5xl">
                 Falta só <span style={{ color: '#F4A7B9' }}>o seu nome.</span>
               </h2>
               <p className="mb-6 max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -682,7 +682,7 @@ export default function OurStory() {
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round">
                     <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" />
                   </svg>
-                  <span className="rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em]"
+                  <span className="rounded-full px-5 py-2 text-xs font-sans uppercase tracking-[0.2em]"
                     style={{ background: '#F4A7B9', color: '#1B3060' }}>
                     Confirmar presença
                   </span>
@@ -692,8 +692,8 @@ export default function OurStory() {
               <p className="text-[11px]" style={{ color: 'rgba(200,220,240,0.3)' }}>
                 Até <span style={{ color: 'rgba(200,220,240,0.55)' }}>15 de junho de 2026</span>
               </p>
-              <p className="mt-6 font-serif text-sm italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                Luís &amp; Natiele
+              <p className="mt-6 font-serif text-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                Luis &amp; Natiele
               </p>
             </div>
           </div>

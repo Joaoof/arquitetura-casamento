@@ -11,7 +11,7 @@ export const DEFAULT_COUPLE_SLUG = 'luis-natiele';
 const COUPLES: Record<string, CoupleConfig> = {
   [DEFAULT_COUPLE_SLUG]: {
     slug: DEFAULT_COUPLE_SLUG,
-    names: 'Luís & Natiele',
+    names: 'Luis & Natiele',
     weddingDateLabel: '25 de Julho de 2026',
     weddingDateISO: '2026-07-25T18:00:00',
     cityLabel: 'Araguaína, TO',
