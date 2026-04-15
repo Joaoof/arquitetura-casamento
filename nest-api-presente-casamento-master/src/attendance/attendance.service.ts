@@ -70,7 +70,7 @@ export class AttendanceService {
     const photoBlock = photoUrl
       ? `<tr>
           <td style="padding:0;line-height:0;">
-            <img src="${photoUrl}" alt="Luis e Natiele" width="600"
+            <img src="https://cdn-icons-png.flaticon.com/512/1451/1451172.png" alt="Luis e Natiele" width="600"
               style="display:block;width:100%;height:280px;object-fit:cover;object-position:top;" />
           </td>
         </tr>`
