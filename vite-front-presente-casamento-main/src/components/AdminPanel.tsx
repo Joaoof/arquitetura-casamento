@@ -7,10 +7,11 @@ import {
   Activity, Calendar, Heart, Sparkles, ArrowLeft, Gift,
   TrendingUp, TrendingDown, Bell, Search, RefreshCw,
   CheckCircle, Clock, AlertCircle, Star, Filter,
-  ChevronUp, Percent, Mail, Send, Loader2,
+  ChevronUp, Percent, Mail, Send, Loader2, LogOut,
 } from 'lucide-react';
 import { exportToPdf } from '../helpers/export.helper';
 import { api, Attendance } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface AdminSidebarProps {
   gifts: GiftType[];
@@ -85,6 +86,7 @@ const MiniBarChart: React.FC<{ data: { label: string; value: number; color: stri
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
   gifts = [], onAddGift, onUpdateGift, onDeleteGift, onDeleteAllGifts, giftToEdit, onCancelEdit,
 }) => {
+  const { logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('dashboard')
   const [showExportMsg, setShowExportMsg] = useState(false)
@@ -252,6 +254,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const handleSubmit = async (giftData: Omit<GiftType, 'id' | 'createdAt' | 'status'>) => {
     await onAddGift(giftData)
     setActiveTab('manage')
+  }
+
+  const handleLogout = () => {
+    setIsOpen(false)
+    logout()
   }
 
   const handleUpdate = async (id: string, gift: Partial<GiftType>) => {
@@ -485,6 +492,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 style={{ color: 'rgba(200,220,240,0.3)' }}>
                 <X size={13} /> Fechar
               </button>
+              <button onClick={handleLogout}
+                className="adm-nav w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all hover:bg-red-900/20"
+                style={{ color: '#f87171', marginTop: 4 }}>
+                <LogOut size={13} /> Sair da conta
+              </button>
             </div>
           </div>
 
@@ -604,6 +616,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   )}
                 </div>
 
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:bg-red-900/20"
+                  style={{ color: '#f87171' }}
+                  title="Sair da conta">
+                  <LogOut size={14} />
+                  <span className="hidden sm:inline">Sair</span>
+                </button>
                 <button onClick={() => { setIsOpen(false); onCancelEdit() }}
                   className="rounded-xl p-2 transition-colors hover:bg-white/10"
                   style={{ color: 'rgba(200,220,240,0.4)' }}>
