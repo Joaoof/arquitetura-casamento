@@ -66,21 +66,39 @@ function HomePage() {
           />
         )}
 
-        <section id="lista-de-presentes" className="max-w-3xl mx-auto px-4 py-10">
-          <a
-            href={GIFT_IMAGE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <img
-              src={GIFT_IMAGE_URL}
-              alt="Lista de Presentes"
-              className="w-full h-auto rounded-2xl shadow-lg"
-              loading="lazy"
-            />
-          </a>
-        </section>
+      <section id="lista-de-presentes" className="max-w-1xl mx-auto px-4 py-10">
+  {/* Alert */}
+  <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl px-6 py-5 text-center shadow-sm">
+    <p className="text-blue-800 font-semibold text-base mb-2">
+      Queridos amigos e familiares 💙
+    </p>
+    <p className="text-blue-700 text-sm leading-relaxed">
+      Não teremos lista de presentes. Estamos de mudança para Brasília e, caso queiram nos presentear, uma contribuição via Pix será muito bem-vinda.
+    </p>
+    <p className="text-blue-700 text-sm leading-relaxed mt-2">
+      Disponibilizamos o QR Code para facilitar.<br />
+      Agradecemos de coração por todo carinho e apoio!
+    </p>
+    <p className="text-blue-800 font-medium text-sm mt-3">
+      Com amor, Luis Vinicius & Natiele! 🤍
+    </p>
+  </div>
+
+  {/* Imagem menor e centralizada */}
+  <a
+    href={GIFT_IMAGE_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block mx-auto w-64 sm:w-80"
+  >
+    <img
+      src={GIFT_IMAGE_URL}
+      alt="QR Code Pix"
+      className="w-full h-auto rounded-2xl shadow-lg"
+      loading="lazy"
+    />
+  </a>
+</section>
       </main>
 
       <Footer />
