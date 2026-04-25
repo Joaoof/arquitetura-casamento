@@ -920,14 +920,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
                   <div className="rounded-2xl overflow-hidden"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,220,240,0.08)' }}>
-                    <div className="overflow-x-auto">
-                    <div style={{ minWidth: 520 }}>
-                    <div className="grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
+                    {/* Header — só aparece em telas md+ (modo tabela) */}
+                    <div className="hidden md:grid px-5 py-3 text-[9px] font-bold uppercase tracking-widest"
                       style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px', color: 'rgba(200,220,240,0.3)', borderBottom: '1px solid rgba(200,220,240,0.06)' }}>
                       <span>Nome</span><span>E-mail</span><span className="text-center">Acomp.</span>
                       <span className="text-center">Status</span><span className="text-right">Data</span><span />
                     </div>
-                    <div className="max-h-[420px] overflow-y-auto">
+
+                    <div className="max-h-[60vh] md:max-h-[420px] overflow-y-auto">
                       {attendanceLoading && (
                         <div className="py-12 text-center text-xs" style={{ color: 'rgba(200,220,240,0.5)' }}>
                           Carregando confirmações...
@@ -948,43 +948,120 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
                       {!attendanceLoading && !attendanceError && filteredAttendances.map((attendance, index) => (
                         <div key={attendance.id}
-                          className="adm-row grid px-5 py-3 items-center transition-colors"
-                          style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px', background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-semibold" style={{ color: 'rgba(200,220,240,0.9)' }}>{attendance.fullName}</p>
-                            {attendance.message && (
-                              <p className="truncate text-[9px]" style={{ color: 'rgba(200,220,240,0.35)' }}>{attendance.message}</p>
-                            )}
-                          </div>
-                          <p className="truncate text-xs" style={{ color: 'rgba(200,220,240,0.7)' }}>{attendance.email}</p>
-                          <p className="text-center text-xs font-bold" style={{ color: '#C8DCF0' }}>{attendance.companions}</p>
-                          <div className="flex justify-center">
-                            <span className="rounded-full px-2 py-0.5 text-[8px] font-bold"
-                              style={attendance.isAttending
-                                ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
-                                : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
-                              {attendance.isAttending ? '● Confirmado' : '● Recusado'}
-                            </span>
-                          </div>
-                          <p className="text-right text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>
-                            {new Date(attendance.createdAt).toLocaleDateString('pt-BR')}
-                          </p>
-                          <div className="flex justify-center">
+                          className="adm-row transition-colors"
+                          style={{ background: index % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(200,220,240,0.04)' }}>
+
+                          {/* ── Layout DESKTOP (tabela) ── */}
+                          <div className="hidden md:grid px-5 py-3 items-center"
+                            style={{ gridTemplateColumns: '1.2fr 1fr 80px 80px 90px 44px' }}>
                             <button
-                              onClick={() => handleDeleteAttendance(attendance.id)}
-                              disabled={deletingAttendanceId === attendance.id}
-                              className="flex items-center justify-center rounded-lg p-1.5 transition-all hover:scale-110 disabled:opacity-40"
-                              style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.25)', color: '#f87171' }}
-                              title="Remover confirmação">
-                              {deletingAttendanceId === attendance.id
-                                ? <Loader2 size={11} className="animate-spin" />
-                                : <Trash2 size={11} />}
+                              onClick={() => setSelectedNotif(attendance)}
+                              className="min-w-0 text-left hover:opacity-80 transition-opacity">
+                              <p className="truncate text-xs font-semibold flex items-center gap-1" style={{ color: 'rgba(200,220,240,0.9)' }}>
+                                {attendance.fullName}
+                                {attendance.message && (
+                                  <Mail size={10} style={{ color: '#7AAFD4' }} />
+                                )}
+                              </p>
+                              {attendance.message && (
+                                <p className="truncate text-[10px] italic" style={{ color: 'rgba(200,220,240,0.55)' }}>
+                                  "{attendance.message}"
+                                </p>
+                              )}
                             </button>
+                            <p className="truncate text-xs" style={{ color: 'rgba(200,220,240,0.7)' }}>{attendance.email}</p>
+                            <p className="text-center text-xs font-bold" style={{ color: '#C8DCF0' }}>{attendance.companions}</p>
+                            <div className="flex justify-center">
+                              <span className="rounded-full px-2 py-0.5 text-[8px] font-bold"
+                                style={attendance.isAttending
+                                  ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
+                                  : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
+                                {attendance.isAttending ? '● Confirmado' : '● Recusado'}
+                              </span>
+                            </div>
+                            <p className="text-right text-[10px]" style={{ color: 'rgba(200,220,240,0.5)' }}>
+                              {new Date(attendance.createdAt).toLocaleDateString('pt-BR')}
+                            </p>
+                            <div className="flex justify-center">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteAttendance(attendance.id) }}
+                                disabled={deletingAttendanceId === attendance.id}
+                                className="flex items-center justify-center rounded-lg p-1.5 transition-all hover:scale-110 disabled:opacity-40"
+                                style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.25)', color: '#f87171' }}
+                                title="Remover confirmação">
+                                {deletingAttendanceId === attendance.id
+                                  ? <Loader2 size={11} className="animate-spin" />
+                                  : <Trash2 size={11} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* ── Layout MOBILE (card) ── */}
+                          <div className="md:hidden px-4 py-3">
+                            <button
+                              onClick={() => setSelectedNotif(attendance)}
+                              className="w-full text-left">
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-bold truncate" style={{ color: 'rgba(200,220,240,0.95)' }}>
+                                    {attendance.fullName}
+                                  </p>
+                                  <p className="text-[11px] truncate" style={{ color: 'rgba(200,220,240,0.55)' }}>
+                                    {attendance.email}
+                                  </p>
+                                </div>
+                                <span className="flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold whitespace-nowrap"
+                                  style={attendance.isAttending
+                                    ? { background: 'rgba(14,92,64,0.3)', color: '#4ade80' }
+                                    : { background: 'rgba(192,80,14,0.3)', color: '#fb923c' }}>
+                                  {attendance.isAttending ? '● Confirmado' : '● Recusado'}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3 text-[10px] mb-2"
+                                style={{ color: 'rgba(200,220,240,0.45)' }}>
+                                <span className="flex items-center gap-1">
+                                  <Users size={10} /> {attendance.companions} acomp.
+                                </span>
+                                <span>·</span>
+                                <span>{new Date(attendance.createdAt).toLocaleDateString('pt-BR')}</span>
+                              </div>
+
+                              {attendance.message ? (
+                                <div className="rounded-lg px-3 py-2"
+                                  style={{ background: 'rgba(74,122,181,0.12)', border: '1px solid rgba(74,122,181,0.2)' }}>
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <Mail size={10} style={{ color: '#7AAFD4' }} />
+                                    <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: '#7AAFD4' }}>
+                                      Mensagem
+                                    </span>
+                                  </div>
+                                  <p className="text-[12px] italic leading-relaxed" style={{ color: 'rgba(200,220,240,0.85)' }}>
+                                    "{attendance.message}"
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="text-[10px] italic" style={{ color: 'rgba(200,220,240,0.3)' }}>
+                                  Sem mensagem ao casal.
+                                </p>
+                              )}
+                            </button>
+
+                            <div className="flex justify-end mt-2">
+                              <button
+                                onClick={() => handleDeleteAttendance(attendance.id)}
+                                disabled={deletingAttendanceId === attendance.id}
+                                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold transition-all disabled:opacity-40"
+                                style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.25)', color: '#f87171' }}>
+                                {deletingAttendanceId === attendance.id
+                                  ? <Loader2 size={10} className="animate-spin" />
+                                  : <Trash2 size={10} />}
+                                Remover
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
-                    </div>
-                    </div>
                     </div>
                   </div>
                 </div>
