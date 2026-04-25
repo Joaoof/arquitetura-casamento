@@ -7,7 +7,6 @@ import { Gift } from './types'
 
 import Header from './components/Header'
 import Footer from './components/Footer'
-import GiftList from './components/GiftList'
 import AdminPanel from './components/AdminPanel'
 import LoginModal from './components/LoginModal'
 import PhotoCarousel from './components/PhotosCarousel'
@@ -19,31 +18,26 @@ import './styles/animations.css'
 import WelcomeBanner from './components/WelcomeBanner'
 import { DEFAULT_COUPLE_SLUG, getCoupleConfig, normalizeCoupleSlug } from './config/couples'
 
+const GIFT_IMAGE_URL = 'https://i.postimg.cc/sg27fNB9/Whats-App-Image-2026-04-22-at-10-53-29.jpg'
+
 function HomePage() {
   const { coupleSlug } = useParams<{ coupleSlug: string }>()
   const normalizedCoupleSlug = normalizeCoupleSlug(coupleSlug)
   const couple = getCoupleConfig(normalizedCoupleSlug)
 
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated } = useAuth()
   const {
-    gifts, addGift, updateGift, removeGift, removeAllGifts, reserveGift,
-    searchTerm, setSearchTerm, filter, setFilter,
+    gifts, addGift, updateGift, removeGift, removeAllGifts,
   } = useGifts(normalizedCoupleSlug)
 
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [giftToEdit, setGiftToEdit] = useState<Gift | null>(null)
 
-  const handleEditGift = (gift: Gift) => setGiftToEdit(gift)
   const handleCancelEdit = () => setGiftToEdit(null)
 
   const handleSubmitEdit = (data: Omit<Gift, 'id' | 'createdAt' | 'status'>) => {
     if (giftToEdit) { updateGift(giftToEdit.id, data); setGiftToEdit(null) }
     else addGift(data)
-  }
-
-  const handleReserveGift = async (id: string, reservedBy: string) => {
-    try { await reserveGift(id, reservedBy) }
-    catch (error) { console.error('Erro ao reservar presente:', error); throw error }
   }
 
   return (
@@ -72,18 +66,21 @@ function HomePage() {
           />
         )}
 
-        <GiftList
-          isAdmin={isAuthenticated}
-          onEditGift={handleEditGift}
-          onDeleteGift={removeGift}
-          onReserveGift={handleReserveGift}
-          coupleNames={couple.names}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          filter={filter}
-          onFilterChange={setFilter}
-          coupleSlug={normalizedCoupleSlug}
-        />
+        <section id="lista-de-presentes" className="max-w-3xl mx-auto px-4 py-10">
+          <a
+            href={GIFT_IMAGE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img
+              src={GIFT_IMAGE_URL}
+              alt="Lista de Presentes"
+              className="w-full h-auto rounded-2xl shadow-lg"
+              loading="lazy"
+            />
+          </a>
+        </section>
       </main>
 
       <Footer />
